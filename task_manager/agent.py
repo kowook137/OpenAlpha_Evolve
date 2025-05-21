@@ -220,6 +220,8 @@ class TaskManagerAgent(TaskManagerInterface):
             status="unevaluated"
         )
         logger.info(f"Successfully generated offspring {offspring.id} from parent {parent.id} ({prompt_type}).")
+        print(f"\n=== Generated Code: {offspring.id} ===\n{offspring.code}\n")
+        
         return offspring
 
     async def execute(self) -> Any:

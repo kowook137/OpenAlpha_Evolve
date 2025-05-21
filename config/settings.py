@@ -26,8 +26,8 @@ GEMINI_FLASH_MODEL_NAME = "gemini-2.5-flash-preview-04-17"
 GEMINI_EVALUATION_MODEL = "gemini-2.5-flash-preview-04-17"                             
 
                                     
-POPULATION_SIZE = 5                                            
-GENERATIONS = 2                                                   
+POPULATION_SIZE = 10                                 
+GENERATIONS = 6                                              
 ELITISM_COUNT = 1                                                                      
 MUTATION_RATE = 0.7                                          
 CROSSOVER_RATE = 0.2                                                                          
