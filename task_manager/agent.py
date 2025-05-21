@@ -71,7 +71,18 @@ class TaskManagerAgent(TaskManagerInterface):
                 evaluated_programs.append(original_program)
             else:
                 evaluated_programs.append(result)                                         
-            await self.database.save_program(evaluated_programs[-1])                                    
+            await self.database.save_program(evaluated_programs[-1])              
+
+        latin_scores = [prog.fitness_scores.get("latin_score", 0.0) for prog in evaluated_programs]
+        
+        if latin_scores:
+            avg_latin_score = sum(latin_scores) / len(latin_scores)
+            if avg_latin_score >= 0.98:
+                logger.info(f"Avg Latin score {avg_latin_score:.4f} >= 0.98 → Switching to PRO model.")
+                self.code_generator.use_pro_model = True
+            else:
+                logger.info(f"Avg Latin score {avg_latin_score:.4f} < 0.98 → Using FLASH model.")
+                self.code_generator.use_pro_model = False                      
             
         logger.info(f"Finished evaluating population. {len(evaluated_programs)} programs processed.")
         return evaluated_programs

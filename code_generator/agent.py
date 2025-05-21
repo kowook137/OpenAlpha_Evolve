@@ -24,11 +24,20 @@ class CodeGeneratorAgent(CodeGeneratorInterface):
             top_p=0.9,
             top_k=40
         )
+ 
+        self.use_pro_model = False
         logger.info(f"CodeGeneratorAgent initialized with model: {self.model_name}")
                                                                                                               
 
     async def generate_code(self, prompt: str, model_name: Optional[str] = None, temperature: Optional[float] = None, output_format: str = "code") -> str:
-        effective_model_name = model_name if model_name else self.model_name
+        if model_name is None:
+            if self.use_pro_model:
+                effective_model_name = settings.GEMINI_PRO_MODEL_NAME
+            else: 
+                effective_model_name = settings.GEMINI_FLASH_MODEL_NAME
+        else:
+            effective_model_name = model_name
+        
         logger.info(f"Attempting to generate code using model: {effective_model_name}, output_format: {output_format}")
         
                                             
