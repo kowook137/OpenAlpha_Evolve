@@ -35,19 +35,16 @@ async def main():
     task = TaskDefinition(
         id="generate 10x10 MOLS problem",
         description=(
-            "Implement a function `generate_mols()` that returns a list of three 10x10 Latin squares. "
-            "Each Latin square is a 10x10 grid where integers from 0 to 9 appear exactly once in each row and each column. "
-            "The goal is to generate three Latin squares that are as close as possible to being mutually orthogonal. "
-            "Two Latin squares A and B are orthogonal if the set of ordered pairs (A[i][j], B[i][j]) for all positions (i, j) "
-            "are all distinct. Full mutual orthogonality among three squares means that each of the three square pairs "
-            "(A, B), (A, C), and (B, C) satisfy this condition."
+            "Implement a function `generate_mols()` → List[List[List[int]]]."
+            "It should return 3 Latin squares of size 10×10, each as a 2D list of integers 0–9."
+            "Each square must have no repeated numbers in any row or column."
+            "Two squares A and B are orthogonal if all (A[i][j], B[i][j]) pairs are unique across all positions."
+            "Return three Latin squares that are as mutually orthogonal as possible — i.e., all pairs (A,B), (A,C), and (B,C) should satisfy this condition."
+            "Partial credit is given for:"
+            "- Nearly valid Latin squares (few duplicate values in rows/columns),"
+            "- Nearly orthogonal square pairs (few repeated pairs)."
+            "Return format: a list of 3 elements, each a 10×10 list of integers from 0 to 9."
 
-            "The scoring function rewards both Latin validity and orthogonality. "
-            "Each Latin square is evaluated on how closely it satisfies the Latin condition: having no duplicates in any row or column. "
-            "Each pair of squares is then evaluated based on the number of duplicate pairs (A[i][j], B[i][j])—fewer duplicates mean higher orthogonality. "
-            "Partial credit is given to squares that approximate these conditions even if they are not fully satisfied."
-
-            "The function should return: List[List[List[int]]], where the outer list contains 3 squares, each represented as a 10x10 grid of integers 0–9."
         ),
         function_name_to_evolve="generate_MOLS_10",
         input_output_examples = [
@@ -55,45 +52,128 @@ async def main():
                 "input": [],
                 "output": [
                     [   # Latin Square 1
-                        [0, 8, 9, 7, 5, 6, 4, 2, 3, 1],
-                        [9, 1, 4, 6, 2, 7, 3, 8, 0, 5],
-                        [7, 4, 2, 5, 1, 3, 8, 6, 9, 0],
-                        [8, 6, 5, 3, 9, 2, 1, 0, 4, 7],
-                        [6, 2, 1, 8, 4, 0, 9, 5, 7, 3],
-                        [4, 9, 3, 2, 7, 5, 0, 1, 6, 8],
-                        [5, 3, 7, 1, 0, 8, 6, 9, 2, 4],
-                        [3, 5, 0, 9, 8, 4, 2, 7, 1, 6],
-                        [1, 7, 6, 0, 3, 9, 5, 4, 8, 2],
-                        [2, 0, 8, 4, 6, 1, 7, 3, 5, 9]
+                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                        [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
+                        [2, 3, 4, 5, 6, 7, 8, 9, 0, 1],
+                        [3, 4, 5, 6, 7, 8, 9, 0, 1, 2],
+                        [4, 5, 6, 7, 8, 9, 0, 1, 2, 3],
+                        [5, 6, 7, 8, 9, 0, 1, 2, 3, 4],
+                        [6, 7, 8, 9, 0, 1, 2, 3, 4, 5],
+                        [7, 8, 9, 0, 1, 2, 3, 4, 5, 6],
+                        [8, 9, 0, 1, 2, 3, 4, 5, 6, 7],
+                        [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
                     ],
                     [   # Latin Square 2
-                        [0, 7, 8, 9, 1, 2, 3, 4, 5, 6],
-                        [9, 0, 6, 1, 8, 3, 2, 5, 4, 7],
-                        [7, 2, 0, 4, 3, 9, 1, 8, 6, 5],
-                        [8, 5, 3, 0, 2, 1, 7, 6, 9, 4],
-                        [6, 9, 5, 3, 0, 7, 4, 2, 1, 8],
-                        [4, 1, 7, 6, 5, 0, 8, 9, 3, 2],
-                        [5, 4, 2, 8, 9, 6, 0, 3, 7, 1],
-                        [3, 6, 1, 7, 4, 8, 5, 0, 2, 9],
-                        [1, 8, 4, 2, 6, 5, 9, 7, 0, 3],
-                        [2, 3, 9, 5, 7, 4, 6, 1, 8, 0]
+                        [0, 2, 4, 6, 8, 1, 3, 5, 7, 9],
+                        [1, 3, 5, 7, 9, 2, 4, 6, 8, 0],
+                        [2, 4, 6, 8, 0, 3, 5, 7, 9, 1],
+                        [3, 5, 7, 9, 1, 4, 6, 8, 0, 2],
+                        [4, 6, 8, 0, 2, 5, 7, 9, 1, 3],
+                        [5, 7, 9, 1, 3, 6, 8, 0, 2, 4],
+                        [6, 8, 0, 2, 4, 7, 9, 1, 3, 5],
+                        [7, 9, 1, 3, 5, 8, 0, 2, 4, 6],
+                        [8, 0, 2, 4, 6, 9, 1, 3, 5, 7],
+                        [9, 1, 3, 5, 7, 0, 2, 4, 6, 8]
                     ],
                     [  # Latin Square 3
-                        [0, 7, 8, 9, 1, 2, 3, 4, 5, 6],
-                        [6, 4, 2, 8, 9, 5, 1, 3, 7, 0],
-                        [4, 9, 5, 3, 2, 7, 6, 0, 1, 8],
-                        [5, 1, 7, 6, 4, 3, 8, 9, 0, 2],
-                        [3, 2, 9, 0, 7, 1, 5, 6, 8, 4],
-                        [1, 0, 3, 7, 6, 8, 2, 5, 4, 9],
-                        [2, 8, 0, 1, 3, 4, 9, 7, 6, 5],
-                        [9, 5, 4, 2, 8, 6, 0, 1, 3, 7],
-                        [7, 3, 6, 5, 0, 9, 4, 8, 2, 1],
-                        [8, 6, 1, 4, 5, 0, 7, 2, 9, 3]
+                        [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
+                        [8, 7, 6, 5, 4, 3, 2, 1, 0, 9],
+                        [7, 6, 5, 4, 3, 2, 1, 0, 9, 8],
+                        [6, 5, 4, 3, 2, 1, 0, 9, 8, 7],
+                        [5, 4, 3, 2, 1, 0, 9, 8, 7, 6],
+                        [4, 3, 2, 1, 0, 9, 8, 7, 6, 5],
+                        [3, 2, 1, 0, 9, 8, 7, 6, 5, 4],
+                        [2, 1, 0, 9, 8, 7, 6, 5, 4, 3],
+                        [1, 0, 9, 8, 7, 6, 5, 4, 3, 2],
+                        [0, 9, 8, 7, 6, 5, 4, 3, 2, 1]
                     ]
                 ]
+            },
+            {
+                "input": [],
+                "output": [
+                      [  # square 1
+                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                        [2, 3, 4, 5, 6, 7, 8, 9, 0, 1],
+                        [4, 5, 6, 7, 8, 9, 0, 1, 2, 3],
+                        [6, 7, 8, 9, 0, 1, 2, 3, 4, 5],
+                        [8, 9, 0, 1, 2, 3, 4, 5, 6, 7],
+                        [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
+                        [3, 4, 5, 6, 7, 8, 9, 0, 1, 2],
+                        [5, 6, 7, 8, 9, 0, 1, 2, 3, 4],
+                        [7, 8, 9, 0, 1, 2, 3, 4, 5, 6],
+                        [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+                    ],
+                    [  # square 2
+                        [0, 2, 4, 6, 8, 1, 3, 5, 7, 9],
+                        [1, 3, 5, 7, 9, 2, 4, 6, 8, 0],
+                        [2, 4, 6, 8, 0, 3, 5, 7, 9, 1],
+                        [3, 5, 7, 9, 1, 4, 6, 8, 0, 2],
+                        [4, 6, 8, 0, 2, 5, 7, 9, 1, 3],
+                        [5, 7, 9, 1, 3, 6, 8, 0, 2, 4],
+                        [6, 8, 0, 2, 4, 7, 9, 1, 3, 5],
+                        [7, 9, 1, 3, 5, 8, 0, 2, 4, 6],
+                        [8, 0, 2, 4, 6, 9, 1, 3, 5, 7],
+                        [9, 1, 3, 5, 7, 0, 2, 4, 6, 8]
+                    ],
+                    [  # square 3 (random but Latin)
+                        [0, 4, 8, 2, 6, 1, 5, 9, 3, 7],
+                        [1, 5, 9, 3, 7, 2, 6, 0, 4, 8],
+                        [2, 6, 0, 4, 8, 3, 7, 1, 5, 9],
+                        [3, 7, 1, 5, 9, 4, 8 ,2 ,6 ,0],
+                        [4, 8, 2, 6, 0, 5, 9, 3, 7, 1],
+                        [5, 9, 3, 7, 1, 6, 0, 4, 8, 2],
+                        [6, 0, 4, 8, 2, 7, 1, 5, 9, 3],
+                        [7, 1, 5, 9, 3, 8, 2, 6, 0, 4],
+                        [8, 2, 6, 0, 4, 9, 3, 7, 1, 5],
+                        [9, 3, 7, 1, 5, 0, 4, 8, 2, 6]
+                    ]
+                ]
+            },
+            {
+                "input":[],
+                "output": [
+                     [  # square 1
+                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+                        [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
+                        [2, 3, 4, 5, 6, 7, 8, 9, 0, 1],
+                        [3, 4, 5, 6, 7, 8, 9, 0, 1, 2],
+                        [4, 5, 6, 7, 8, 9, 0, 1, 2, 3],
+                        [5, 6, 7, 8, 9, 0, 1, 2, 3, 4],
+                        [6, 7, 8, 9, 0, 1, 2, 3, 4, 5],
+                        [7, 8, 9, 0, 1, 2, 3, 4, 5, 6],
+                        [8, 9, 0, 1, 2, 3, 4, 5, 6, 7],
+                        [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
+                    ],
+                    [  # square 2 (same as square1 rotated → very low orthogonality)
+                        [0, 9, 8, 7, 6, 5, 4, 3, 2, 1],
+                        [1, 0, 9, 8, 7, 6, 5, 4, 3, 2],
+                        [2, 1, 0, 9, 8, 7, 6, 5, 4, 3],
+                        [3, 2, 1, 0, 9, 8, 7, 6, 5, 4],
+                        [4, 3, 2, 1, 0, 9, 8, 7, 6, 5],
+                        [5, 4, 3, 2, 1, 0, 9, 8, 7, 6],
+                        [6, 5, 4, 3, 2, 1, 0, 9, 8, 7],
+                        [7, 6, 5, 4, 3, 2, 1, 0, 9, 8],
+                        [8, 7, 6, 5, 4, 3, 2, 1, 0, 9],
+                        [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+                    ],
+                    [  # square 3 (partial noise but Latin)
+                        [0, 1, 3, 2, 4, 5, 7, 6, 9, 8],
+                        [1, 2, 4, 3, 5, 6, 8, 7, 0, 9],
+                        [2, 3, 5, 4, 6, 7, 9, 8, 1, 0],
+                        [3, 4, 6, 5, 7, 8, 0, 9, 2, 1],
+                        [4, 5, 7, 6, 8, 9, 1, 0, 3, 2],
+                        [5, 6, 8, 7, 9, 0, 2, 1, 4, 3],
+                        [6, 7, 9, 8, 0, 1, 3, 2, 5, 4],
+                        [7, 8, 0, 9, 1, 2, 4, 3, 6, 5],
+                        [8, 9, 1, 0, 2, 3, 5, 4, 7, 6],
+                        [9, 0, 2, 1, 3, 4, 6, 5, 8, 7]
+                    ]
+                ]
+
             }
         ],
-        allowed_imports=["random", "itertools"],
+        allowed_imports=["random", "itertools", "numpy"],
 
     )
 
