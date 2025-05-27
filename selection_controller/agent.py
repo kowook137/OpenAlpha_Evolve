@@ -32,7 +32,7 @@ class SelectionControllerAgent(SelectionControllerInterface, BaseAgent):
         sorted_population = sorted(
             population,
             key=lambda p: (
-                p.fitness_scores.get("correctness", 0.0),
+                p.fitness_scores.get("score", p.fitness_scores.get("correctness", 0.0)),
                 -p.fitness_scores.get("runtime_ms", float('inf'))                                         
             ),
             reverse=True                                
@@ -69,7 +69,7 @@ class SelectionControllerAgent(SelectionControllerInterface, BaseAgent):
 
                                                                               
                                                                                      
-        total_fitness = sum(p.fitness_scores.get("correctness", 0.0) + 0.0001 for p in roulette_candidates)
+        total_fitness = sum(p.fitness_scores.get("score", p.fitness_scores.get("correctness", 0.0)) + 0.0001 for p in roulette_candidates)
         logger.debug(f"Total fitness for roulette wheel selection (among {len(roulette_candidates)} candidates): {total_fitness:.4f}")
 
         if total_fitness <= 0.0001 * len(roulette_candidates):                       
@@ -86,7 +86,7 @@ class SelectionControllerAgent(SelectionControllerInterface, BaseAgent):
                 current_sum = 0
                 chosen_parent = None
                 for program in roulette_candidates:
-                    current_sum += (program.fitness_scores.get("correctness", 0.0) + 0.0001)
+                    current_sum += (program.fitness_scores.get("score", program.fitness_scores.get("correctness", 0.0)) + 0.0001)
                     if current_sum >= pick:
                         chosen_parent = program
                         break
@@ -94,7 +94,7 @@ class SelectionControllerAgent(SelectionControllerInterface, BaseAgent):
                     parents.append(chosen_parent)
                                                                                                                              
                                                                                                                               
-                    logger.debug(f"Selected parent via roulette: {chosen_parent.id} (Fitness: {chosen_parent.fitness_scores.get('correctness')})")
+                    logger.debug(f"Selected parent via roulette: {chosen_parent.id} (Fitness: {chosen_parent.fitness_scores.get('score', chosen_parent.fitness_scores.get('correctness'))})")
                 else:
                                                                                                                
                                                                          
@@ -122,7 +122,7 @@ class SelectionControllerAgent(SelectionControllerInterface, BaseAgent):
         sorted_combined = sorted(
             combined_population,
             key=lambda p: (
-                p.fitness_scores.get("correctness", 0.0),
+                p.fitness_scores.get("score", p.fitness_scores.get("correctness", 0.0)),
                 -p.fitness_scores.get("runtime_ms", float('inf')),
                 -p.generation                                                       
             ),

@@ -27,13 +27,15 @@ GEMINI_EVALUATION_MODEL = "gemini-2.5-flash-preview-04-17"
 
                                     
 POPULATION_SIZE = 10                                 
-GENERATIONS = 6                                              
+GENERATIONS = 50                                             
 ELITISM_COUNT = 1                                                                      
 MUTATION_RATE = 0.7                                          
 CROSSOVER_RATE = 0.2                                                                          
 
                      
-EVALUATION_TIMEOUT_SECONDS = 800                                                   
+EVALUATION_TIMEOUT_SECONDS = 30
+CODE_GENERATION_TIMEOUT_SECONDS = 120
+DIFF_APPLICATION_TIMEOUT_SECONDS = 10
 
                                                             
 DATABASE_TYPE = "in_memory"                                          
@@ -44,8 +46,10 @@ LOG_LEVEL = "INFO"
 LOG_FILE = "alpha_evolve.log"
 
                       
-API_MAX_RETRIES = 5
-API_RETRY_DELAY_SECONDS = 10                                     
+API_MAX_RETRIES = 3
+API_RETRY_DELAY_SECONDS = 5
+MAX_CONCURRENT_EVALUATIONS = 5
+MAX_CONCURRENT_GENERATIONS = 3                                     
 
                                                  
 RL_TRAINING_INTERVAL_GENERATIONS = 50                                         

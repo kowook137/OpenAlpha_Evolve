@@ -157,6 +157,31 @@ Make sure your diff can be applied correctly!
         logger.debug("No markdown fences found or standard cleaning applied to the stripped code.")
         return code
 
+    def _validate_python_syntax(self, code: str) -> tuple[bool, str]:
+        """Python 문법 검사"""
+        try:
+            import ast
+            ast.parse(code)
+            return True, ""
+        except SyntaxError as e:
+            return False, f"Syntax error: {e}"
+        except Exception as e:
+            return False, f"Parse error: {e}"
+
+    def _check_indentation_consistency(self, code: str) -> tuple[bool, str]:
+        """들여쓰기 일관성 검사"""
+        lines = code.split('\n')
+        indent_levels = []
+        
+        for i, line in enumerate(lines):
+            if line.strip():  # 빈 줄 제외
+                leading_spaces = len(line) - len(line.lstrip())
+                if leading_spaces % 4 != 0:  # 4칸 들여쓰기 기준
+                    return False, f"Line {i+1}: Inconsistent indentation (not multiple of 4)"
+                indent_levels.append(leading_spaces)
+        
+        return True, ""
+
     def _apply_diff(self, parent_code: str, diff_text: str) -> str:
         """
         Applies a diff in the AlphaEvolve format to the parent code.
@@ -168,6 +193,7 @@ Make sure your diff can be applied correctly!
         >>>>>>> REPLACE
         
         Uses fuzzy matching to handle slight variations in whitespace and indentation.
+        Includes syntax and indentation validation.
         """
         logger.info("Attempting to apply diff.")
         logger.debug(f"Parent code length: {len(parent_code)}")
@@ -289,6 +315,20 @@ Make sure your diff can be applied correctly!
              logger.warning("Diff text was provided, but no changes were applied. Check SEARCH blocks/diff format.")
         elif modified_code != parent_code:
              logger.info("Diff successfully applied, code has been modified.")
+             
+             # 수정된 코드 검증
+             syntax_valid, syntax_error = self._validate_python_syntax(modified_code)
+             if not syntax_valid:
+                 logger.error(f"Generated code has syntax errors: {syntax_error}")
+                 logger.warning("Reverting to parent code due to syntax errors.")
+                 return parent_code
+             
+             indent_valid, indent_error = self._check_indentation_consistency(modified_code)
+             if not indent_valid:
+                 logger.warning(f"Generated code has indentation issues: {indent_error}")
+                 # 들여쓰기 문제는 경고만 하고 계속 진행
+             
+             logger.info("Code validation passed.")
         else:
              logger.info("No diff text provided or diff was empty, code unchanged.")
              

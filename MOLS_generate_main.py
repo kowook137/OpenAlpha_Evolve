@@ -15,6 +15,7 @@ if project_root not in sys.path:
 from task_manager.agent import TaskManagerAgent
 from core.interfaces import TaskDefinition
 from config import settings
+from mols_task.evaluator_agent.agent import EvaluatorAgent
 
 logging.basicConfig(
     level=getattr(logging, settings.LOG_LEVEL.upper(), logging.INFO),
@@ -177,8 +178,10 @@ async def main():
 
     )
 
+    evaluator = EvaluatorAgent()
     task_manager = TaskManagerAgent(
-        task_definition=task
+        task_definition=task,
+        evaluator=evaluator  # evaluator 인스턴스 전달
     )
 
     best_programs = await task_manager.execute()
@@ -189,6 +192,31 @@ async def main():
             logger.info(f"Final Best Program {i+1} ID: {program.id}")
             logger.info(f"Final Best Program {i+1} Fitness: {program.fitness_scores}")
             logger.info(f"Final Best Program {i+1} Code:\n{program.code}")
+            
+            # 최적의 프로그램 실행 및 결과 시각화
+            try:
+                namespace = {}
+                exec(program.code, namespace)
+                squares = namespace['generate_MOLS_10']()
+                evaluator.print_matrix(squares[0], "Latin Square 1")
+                evaluator.print_matrix(squares[1], "Latin Square 2")
+                evaluator.print_matrix(squares[2], "Latin Square 3")
+                
+                print("\nOrthogonality Check:")
+                print("-" * 40)
+                for i in range(len(squares)):
+                    for j in range(i + 1, len(squares)):
+                        pairs = set()
+                        duplicates = 0
+                        for r in range(len(squares[i])):
+                            for c in range(len(squares[i])):
+                                pair = (squares[i][r][c], squares[j][r][c])
+                                if pair in pairs:
+                                    duplicates += 1
+                                pairs.add(pair)
+                        print(f"Squares {i+1} and {j+1}: {duplicates} duplicate pairs")
+            except Exception as e:
+                logger.error(f"Error visualizing results: {str(e)}")
     else:
         logger.info("Evolutionary process completed, but no suitable programs were found.")
 

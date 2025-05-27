@@ -43,7 +43,7 @@ class InMemoryDatabaseAgent(DatabaseAgentInterface, BaseAgent):
         self,
         task_id: str,
         limit: int = 5,
-        objective: Literal["correctness", "runtime_ms"] = "correctness",
+        objective: Literal["correctness", "runtime_ms", "score"] = "correctness",
         sort_order: Literal["asc", "desc"] = "desc",
     ) -> List[Program]:
         logger.info(f"Retrieving best programs for task {task_id}. Limit: {limit}, Objective: {objective}, Order: {sort_order}")
@@ -60,6 +60,8 @@ class InMemoryDatabaseAgent(DatabaseAgentInterface, BaseAgent):
         def sort_key(p: Program):
             if objective == "correctness":
                 return p.fitness_scores.get("correctness", -1.0)
+            elif objective == "score":
+                return p.fitness_scores.get("score", -1.0)
             elif objective == "runtime_ms":
                 val = p.fitness_scores.get("runtime_ms", float('inf'))
                                                                                                         
@@ -72,6 +74,8 @@ class InMemoryDatabaseAgent(DatabaseAgentInterface, BaseAgent):
 
                                                                           
         if objective == "correctness":                               
+            effective_reverse = (sort_order == "desc")
+        elif objective == "score":
             effective_reverse = (sort_order == "desc")
         elif objective == "runtime_ms":                             
             effective_reverse = (sort_order == "asc")                                                 
@@ -87,6 +91,8 @@ class InMemoryDatabaseAgent(DatabaseAgentInterface, BaseAgent):
                                                                
                                                                 
             sorted_programs = sorted(relevant_progs, key=lambda p: p.fitness_scores.get("correctness", -1.0), reverse=(sort_order == "desc"))
+        elif objective == "score":
+            sorted_programs = sorted(relevant_progs, key=lambda p: p.fitness_scores.get("score", -1.0), reverse=(sort_order == "desc"))
         else:
                                                            
             sorted_programs = sorted(relevant_progs, key=sort_key, reverse=effective_reverse)

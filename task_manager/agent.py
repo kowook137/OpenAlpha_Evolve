@@ -21,13 +21,13 @@ from selection_controller.agent import SelectionControllerAgent
 logger = logging.getLogger(__name__)
 
 class TaskManagerAgent(TaskManagerInterface):
-    def __init__(self, task_definition: TaskDefinition, config: Optional[Dict[str, Any]] = None):
+    def __init__(self, task_definition: TaskDefinition, config: Optional[Dict[str, Any]] = None, evaluator=None):
         super().__init__(config)
         self.task_definition = task_definition                            
         self.prompt_designer: PromptDesignerInterface = PromptDesignerAgent(task_definition=self.task_definition)
         self.code_generator: CodeGeneratorInterface = CodeGeneratorAgent()
                                                 
-        self.evaluator: EvaluatorAgentInterface = EvaluatorAgent(task_definition=self.task_definition)
+        self.evaluator: EvaluatorAgentInterface = evaluator or EvaluatorAgent(task_definition=self.task_definition)
         self.database: DatabaseAgentInterface = InMemoryDatabaseAgent()                                      
         self.selection_controller: SelectionControllerInterface = SelectionControllerAgent()
 
@@ -58,20 +58,48 @@ class TaskManagerAgent(TaskManagerInterface):
     async def evaluate_population(self, population: List[Program]) -> List[Program]:
         logger.info(f"Evaluating population of {len(population)} programs.")
         evaluated_programs = []
-        evaluation_tasks = [self.evaluator.evaluate_program(prog, self.task_definition) for prog in population if prog.status != "evaluated"]
         
-        results = await asyncio.gather(*evaluation_tasks, return_exceptions=True)
+        # 평가되지 않은 프로그램들을 먼저 식별
+        unevaluated_programs = [prog for prog in population if prog.status != "evaluated"]
         
-        for i, result in enumerate(results):
-            original_program = population[i]                              
-            if isinstance(result, Exception):
-                logger.error(f"Error evaluating program {original_program.id}: {result}", exc_info=result)
-                original_program.status = "failed_evaluation"
-                original_program.errors.append(str(result))
-                evaluated_programs.append(original_program)
-            else:
-                evaluated_programs.append(result)                                         
-            await self.database.save_program(evaluated_programs[-1])              
+        if unevaluated_programs:
+            # 평가 태스크 생성 (동일한 순서 보장)
+            evaluation_tasks = [self.evaluator.evaluate_program(prog, self.task_definition) for prog in unevaluated_programs]
+            
+            # 병렬 처리 제한 (메모리 사용량 제어)
+            max_concurrent = min(len(evaluation_tasks), settings.MAX_CONCURRENT_EVALUATIONS)
+            semaphore = asyncio.Semaphore(max_concurrent)
+            
+            async def limited_evaluate(task):
+                async with semaphore:
+                    return await task
+            
+            limited_tasks = [limited_evaluate(task) for task in evaluation_tasks]
+            results = await asyncio.gather(*limited_tasks, return_exceptions=True)
+            
+            # 결과 처리 (인덱스 일치 보장)
+            for i, result in enumerate(results):
+                if i < len(unevaluated_programs):  # 안전성 검사
+                    original_program = unevaluated_programs[i]                              
+                    if isinstance(result, Exception):
+                        logger.error(f"Error evaluating program {original_program.id}: {result}", exc_info=result)
+                        original_program.status = "failed_evaluation"
+                        original_program.errors.append(str(result))
+                        evaluated_programs.append(original_program)
+                    else:
+                        evaluated_programs.append(result)
+                else:
+                    logger.warning(f"Index mismatch in evaluation results: {i} >= {len(unevaluated_programs)}")
+        
+        # 이미 평가된 프로그램들도 포함
+        for prog in population:
+            if prog.status == "evaluated":
+                evaluated_programs.append(prog)
+        
+        # 평가 결과가 변경된 프로그램들만 저장
+        for prog in evaluated_programs:
+            if prog.status in ["evaluated", "failed_evaluation"]:
+                await self.database.save_program(prog)              
 
         latin_scores = [prog.fitness_scores.get("latin_score", 0.0) for prog in evaluated_programs]
         
@@ -117,7 +145,7 @@ class TaskManagerAgent(TaskManagerInterface):
                     if child_counter >= max_offspring:
                         break                                                                                                        
                     
-                    child_id = f"{self.task_definition.id}_gen{gen}_child{len(child_counter)}"
+                    child_id = f"{self.task_definition.id}_gen{gen}_child{child_counter}"
                     generation_tasks.append(self.generate_offspring(parent, gen, child_id))
                     child_counter += 1
             
@@ -144,7 +172,7 @@ class TaskManagerAgent(TaskManagerInterface):
             current_population = self.selection_controller.select_survivors(current_population, offspring_population, self.population_size)
             logger.info(f"Generation {gen}: New population size: {len(current_population)}.")
 
-            best_program_this_gen = sorted(current_population, key=lambda p: (p.fitness_scores.get("correctness", -1), -p.fitness_scores.get("runtime_ms", float('inf'))), reverse=True) 
+            best_program_this_gen = sorted(current_population, key=lambda p: (p.fitness_scores.get("score", -1), -p.fitness_scores.get("runtime_ms", float('inf'))), reverse=True) 
             if best_program_this_gen:
                  logger.info(f"Generation {gen}: Best program: ID={best_program_this_gen[0].id}, Fitness={best_program_this_gen[0].fitness_scores}")
             else:
@@ -155,7 +183,7 @@ class TaskManagerAgent(TaskManagerInterface):
                                                               
 
         logger.info("Evolutionary cycle completed.")
-        final_best = await self.database.get_best_programs(task_id=self.task_definition.id, limit=1, objective="correctness_score")
+        final_best = await self.database.get_best_programs(task_id=self.task_definition.id, limit=1, objective="score")
         if final_best:
             logger.info(f"Overall Best Program: {final_best[0].id}, Code:\n{final_best[0].code}\nFitness: {final_best[0].fitness_scores}")
         else:
@@ -168,7 +196,7 @@ class TaskManagerAgent(TaskManagerInterface):
         prompt_type = "mutation"
                                                                                 
                                                                                          
-        if parent.errors and parent.fitness_scores.get("correctness", 1.0) < 0.1:                    
+        if parent.errors and parent.fitness_scores.get("score", 1.0) < 0.1:                    
                                                              
             primary_error = parent.errors[0]
                                                                                               
@@ -188,7 +216,7 @@ class TaskManagerAgent(TaskManagerInterface):
                                                                         
             feedback = {
                 "errors": parent.errors,
-                "correctness_score": parent.fitness_scores.get("correctness"),
+                "score": parent.fitness_scores.get("score"),
                 "runtime_ms": parent.fitness_scores.get("runtime_ms")
                                                                          
             }
