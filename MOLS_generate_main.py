@@ -14,7 +14,7 @@ if project_root not in sys.path:
 
 from task_manager.gpu_island_task_manager import GPUIslandTaskManager
 from task_manager.island_task_manager import IslandTaskManager
-from core.interfaces import TaskDefinition
+from core.interfaces import TaskDefinition, Program
 from config import settings
 from mols_task.evaluator_agent.agent import EvaluatorAgent
 
@@ -269,15 +269,31 @@ async def main():
     
     if use_gpu:
         # GPU 버전은 다른 실행 방식 사용
-        from core.program_generator import ProgramGeneratorAgent
-        generator = ProgramGeneratorAgent()
+        from code_generator.agent import CodeGeneratorAgent
+        from prompt_designer.agent import PromptDesignerAgent
+        
+        generator = CodeGeneratorAgent()
+        prompt_designer = PromptDesignerAgent(task)
         
         # 초기 프로그램 생성
         initial_programs = []
         for i in range(task_manager_config["population_size"]):
-            program = await generator.generate_program(task)
-            if program:
-                initial_programs.append(program)
+            try:
+                # 초기 프롬프트 생성
+                initial_prompt = prompt_designer.design_initial_prompt()
+                
+                # 코드 생성
+                generated_code = await generator.generate_code(initial_prompt)
+                
+                if generated_code:
+                    program = Program(
+                        id=f"initial_gpu_program_{i}",
+                        code=generated_code,
+                        generation=0
+                    )
+                    initial_programs.append(program)
+            except Exception as e:
+                logger.warning(f"Failed to generate initial program {i}: {e}")
         
         logger.info(f"Generated {len(initial_programs)} initial programs for GPU evolution")
         

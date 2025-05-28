@@ -194,19 +194,34 @@ class GPUIslandManager(IslandManagerInterface):
             # GPU에서 텐서 연산 수행
             fitness_tensor = torch.tensor(fitness_scores, device=device, dtype=torch.float32)
             
-            # 전략별 GPU 가속 진화
-            if island.strategy == EvolutionStrategy.EXPLOITATION:
-                island = GPUIslandManager._gpu_exploitation_strategy(island, fitness_tensor, device)
-            elif island.strategy == EvolutionStrategy.EXPLORATION:
-                island = GPUIslandManager._gpu_exploration_strategy(island, fitness_tensor, device)
-            elif island.strategy == EvolutionStrategy.RANDOM:
-                island = GPUIslandManager._gpu_random_strategy(island, fitness_tensor, device)
-            else:  # BALANCED
-                island = GPUIslandManager._gpu_balanced_strategy(island, fitness_tensor, device)
+            # 1단계: 선택 (Selection)
+            selected_programs = GPUIslandManager._gpu_selection(island, fitness_tensor, device)
+            
+            # 2단계: 변이 및 새 코드 생성 (Mutation & Generation)
+            evolved_programs = GPUIslandManager._gpu_generate_new_programs(
+                selected_programs, island, task, device
+            )
+            
+            # 2.5단계: 새로 생성된 프로그램들 평가
+            evaluated_programs = GPUIslandManager._gpu_evaluate_programs(
+                evolved_programs, task, device
+            )
+            
+            # 3단계: 새로운 집단 구성
+            island.population = evaluated_programs
             
             # 평균 피트니스 계산 (GPU)
-            avg_fitness = torch.mean(fitness_tensor).item()
-            island.fitness_history.append(avg_fitness)
+            if len(evaluated_programs) > 0:
+                new_fitness_scores = []
+                for program in evaluated_programs:
+                    score = program.fitness_scores.get("score", program.fitness_scores.get("correctness", 0.0))
+                    new_fitness_scores.append(score)
+                
+                if new_fitness_scores:
+                    new_fitness_tensor = torch.tensor(new_fitness_scores, device=device, dtype=torch.float32)
+                    avg_fitness = torch.mean(new_fitness_tensor).item()
+                    island.fitness_history.append(avg_fitness)
+            
             island.generation += 1
             
             return island
@@ -216,55 +231,185 @@ class GPUIslandManager(IslandManagerInterface):
             return island
     
     @staticmethod
-    def _gpu_exploitation_strategy(island: Island, fitness_tensor: torch.Tensor, device: torch.device) -> Island:
-        """GPU 가속 착취 전략"""
-        # 상위 50% 선택
-        top_k = max(1, len(island.population) // 2)
-        _, top_indices = torch.topk(fitness_tensor, top_k)
-        
-        # CPU로 인덱스 변환하여 프로그램 선택
-        top_indices_cpu = top_indices.cpu().numpy()
-        island.population = [island.population[i] for i in top_indices_cpu]
-        
-        return island
-    
-    @staticmethod
-    def _gpu_exploration_strategy(island: Island, fitness_tensor: torch.Tensor, device: torch.device) -> Island:
-        """GPU 가속 탐색 전략"""
-        if len(island.population) > 2:
-            # 하위 30% 제거
-            remove_count = max(1, len(island.population) // 3)
-            _, bottom_indices = torch.topk(fitness_tensor, remove_count, largest=False)
+    def _gpu_selection(island: Island, fitness_tensor: torch.Tensor, device: torch.device) -> List[Program]:
+        """GPU 가속 선택 과정"""
+        # 전략별 선택
+        if island.strategy == EvolutionStrategy.EXPLOITATION:
+            # 상위 50% 선택
+            top_k = max(1, len(island.population) // 2)
+            _, top_indices = torch.topk(fitness_tensor, top_k)
+            top_indices_cpu = top_indices.cpu().numpy()
+            return [island.population[i] for i in top_indices_cpu]
             
-            # 상위 개체들만 유지
-            keep_indices = set(range(len(island.population))) - set(bottom_indices.cpu().numpy())
-            island.population = [island.population[i] for i in keep_indices]
-        
-        return island
+        elif island.strategy == EvolutionStrategy.EXPLORATION:
+            # 다양성을 위해 상위 70% 중에서 랜덤 선택
+            top_k = max(1, int(len(island.population) * 0.7))
+            _, top_indices = torch.topk(fitness_tensor, top_k)
+            
+            # 상위 개체들 중에서 랜덤 선택
+            selected_count = max(1, len(island.population) // 3)
+            if len(top_indices) > selected_count:
+                random_selection = torch.randperm(len(top_indices), device=device)[:selected_count]
+                final_indices = top_indices[random_selection]
+            else:
+                final_indices = top_indices
+            
+            final_indices_cpu = final_indices.cpu().numpy()
+            return [island.population[i] for i in final_indices_cpu]
+            
+        elif island.strategy == EvolutionStrategy.RANDOM:
+            # 완전 랜덤 선택
+            select_count = max(1, len(island.population) // 2)
+            random_indices = torch.randperm(len(island.population), device=device)[:select_count]
+            random_indices_cpu = random_indices.cpu().numpy()
+            return [island.population[i] for i in random_indices_cpu]
+            
+        else:  # BALANCED
+            # 상위 60% 선택
+            top_k = max(1, int(len(island.population) * 0.6))
+            _, top_indices = torch.topk(fitness_tensor, top_k)
+            top_indices_cpu = top_indices.cpu().numpy()
+            return [island.population[i] for i in top_indices_cpu]
     
     @staticmethod
-    def _gpu_random_strategy(island: Island, fitness_tensor: torch.Tensor, device: torch.device) -> Island:
-        """GPU 가속 랜덤 전략"""
-        # GPU에서 랜덤 순열 생성
-        perm = torch.randperm(len(island.population), device=device)
-        perm_cpu = perm.cpu().numpy()
+    def _gpu_generate_new_programs(selected_programs: List[Program], island: Island, 
+                                 task: TaskDefinition, device: torch.device) -> List[Program]:
+        """GPU 가속 새 프로그램 생성"""
+        import asyncio
+        from code_generator.agent import CodeGeneratorAgent
+        from prompt_designer.agent import PromptDesignerAgent
         
-        # 프로그램 순서 섞기
-        island.population = [island.population[i] for i in perm_cpu]
+        new_programs = []
+        target_population = max(len(selected_programs), island.population_size if hasattr(island, 'population_size') else 10)
         
-        return island
+        # 기존 우수 개체들 유지 (엘리트주의)
+        elite_count = max(1, len(selected_programs) // 3)
+        new_programs.extend(selected_programs[:elite_count])
+        
+        # 새로운 개체들 생성
+        remaining_count = target_population - len(new_programs)
+        
+        if remaining_count > 0:
+            try:
+                # 비동기 코드 생성을 동기적으로 실행
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                
+                generator = CodeGeneratorAgent()
+                prompt_designer = PromptDesignerAgent(task)
+                
+                # 부모 프로그램들을 기반으로 새 코드 생성
+                for i in range(remaining_count):
+                    try:
+                        # 부모 선택 (GPU에서 랜덤)
+                        if selected_programs:
+                            parent_idx = torch.randint(0, len(selected_programs), (1,), device=device).item()
+                            parent = selected_programs[parent_idx]
+                            
+                            # 변이 프롬프트 생성
+                            mutation_prompt = prompt_designer.design_mutation_prompt(parent)
+                            
+                            # 새 코드 생성
+                            new_code = loop.run_until_complete(
+                                generator.generate_code(mutation_prompt)
+                            )
+                            
+                            if new_code:
+                                new_program = Program(
+                                    id=f"{island.id}_gen{island.generation}_prog{i}",
+                                    code=new_code,
+                                    generation=island.generation + 1,
+                                    parent_id=parent.id
+                                )
+                                new_programs.append(new_program)
+                        else:
+                            # 부모가 없는 경우 새로운 프로그램 생성
+                            initial_prompt = prompt_designer.design_initial_prompt()
+                            new_code = loop.run_until_complete(
+                                generator.generate_code(initial_prompt)
+                            )
+                            
+                            if new_code:
+                                new_program = Program(
+                                    id=f"{island.id}_gen{island.generation}_new{i}",
+                                    code=new_code,
+                                    generation=island.generation + 1
+                                )
+                                new_programs.append(new_program)
+                                
+                    except Exception as e:
+                        logger.warning(f"Failed to generate new program {i}: {e}")
+                        # 실패한 경우 부모 복사
+                        if selected_programs:
+                            parent_idx = i % len(selected_programs)
+                            parent_copy = Program(
+                                id=f"{island.id}_gen{island.generation}_copy{i}",
+                                code=selected_programs[parent_idx].code,
+                                generation=island.generation + 1,
+                                parent_id=selected_programs[parent_idx].id
+                            )
+                            new_programs.append(parent_copy)
+                
+                loop.close()
+                
+            except Exception as e:
+                logger.error(f"Error in GPU program generation: {e}")
+                # 실패한 경우 기존 프로그램들 복사
+                for i in range(remaining_count):
+                    if selected_programs:
+                        parent_idx = i % len(selected_programs)
+                        parent_copy = Program(
+                            id=f"{island.id}_gen{island.generation}_fallback{i}",
+                            code=selected_programs[parent_idx].code,
+                            generation=island.generation + 1,
+                            parent_id=selected_programs[parent_idx].id
+                        )
+                        new_programs.append(parent_copy)
+        
+        return new_programs
     
     @staticmethod
-    def _gpu_balanced_strategy(island: Island, fitness_tensor: torch.Tensor, device: torch.device) -> Island:
-        """GPU 가속 균형 전략"""
-        # 상위 70% 유지
-        keep_count = max(1, int(len(island.population) * 0.7))
-        _, top_indices = torch.topk(fitness_tensor, keep_count)
+    def _gpu_evaluate_programs(programs: List[Program], task: TaskDefinition, device: torch.device) -> List[Program]:
+        """GPU에서 프로그램들을 평가"""
+        from mols_task.evaluator_agent.agent import EvaluatorAgent
         
-        top_indices_cpu = top_indices.cpu().numpy()
-        island.population = [island.population[i] for i in top_indices_cpu]
+        evaluated_programs = []
+        evaluator = EvaluatorAgent()
         
-        return island
+        for program in programs:
+            try:
+                # 기존 점수가 있으면 재사용 (이미 평가된 프로그램)
+                if program.fitness_scores and "score" in program.fitness_scores:
+                    evaluated_programs.append(program)
+                    continue
+                
+                # 새로운 프로그램 평가
+                evaluation_result = evaluator.evaluate_program(program, task)
+                
+                # 평가 결과를 프로그램에 저장
+                new_program = Program(
+                    id=program.id,
+                    code=program.code,
+                    fitness_scores=evaluation_result.fitness_scores,
+                    generation=program.generation,
+                    parent_id=program.parent_id,
+                    evaluation_details=evaluation_result.evaluation_details
+                )
+                evaluated_programs.append(new_program)
+                
+            except Exception as e:
+                logger.warning(f"Failed to evaluate program {program.id}: {e}")
+                # 평가 실패한 경우 낮은 점수 부여
+                failed_program = Program(
+                    id=program.id,
+                    code=program.code,
+                    fitness_scores={"score": 0.0, "correctness": 0.0, "error": str(e)},
+                    generation=program.generation,
+                    parent_id=program.parent_id
+                )
+                evaluated_programs.append(failed_program)
+        
+        return evaluated_programs
     
     async def migrate_between_islands(self, islands: List[Island], generation: int) -> List[Island]:
         """GPU 가속 island 간 이주"""

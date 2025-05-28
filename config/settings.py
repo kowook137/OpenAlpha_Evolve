@@ -52,17 +52,19 @@ DIMENSION_BINS = {
     "solution_approach": 8
 }
 
-# GPU Island Model Settings (RTX 3080 Optimized)
+# GPU Island Model Settings (Dual RTX 3080 Optimized)
 ENABLE_GPU_ACCELERATION = True                              # Enable GPU acceleration
-GPU_DEVICE = "cuda:0"                                       # GPU device
-GPU_NUM_ISLANDS = 10                                        # Number of islands for GPU processing (increased)
-GPU_POPULATION_PER_ISLAND = 30                             # Population per island (increased)
+USE_MULTI_GPU = True                                        # Enable multi-GPU support
+GPU_DEVICES = ["cuda:0", "cuda:1"]                         # Both RTX 3080 GPUs
+GPU_DEVICE = "cuda:0"                                       # Primary GPU device
+GPU_NUM_ISLANDS = 16                                        # Number of islands for dual GPU processing (8 per GPU)
+GPU_POPULATION_PER_ISLAND = 50                             # Population per island (increased for dual GPU)
 GPU_MIGRATION_INTERVAL = 5                                  # Migration interval
 GPU_MIGRATION_RATE = 0.15                                   # Migration rate (higher for GPU)
 GPU_MIGRATION_TOPOLOGY = "ring"                            # Migration topology
-GPU_BATCH_SIZE = 64                                         # GPU batch processing size (increased for larger population)
+GPU_BATCH_SIZE = 128                                        # GPU batch processing size (increased for dual GPU)
 GPU_USE_MIXED_PRECISION = True                             # Use mixed precision training
-GPU_NUM_WORKERS = 6                                         # Number of GPU workers (increased)
+GPU_NUM_WORKERS = 8                                         # Number of GPU workers (increased for dual GPU)
 
 # GPU MAP-Elites Settings
 GPU_MAP_ELITES_ENABLE = True                                # Enable GPU MAP-Elites
@@ -74,7 +76,7 @@ GPU_DIMENSION_BINS = {
     "memory_usage": 12,
     "solution_approach": 12
 }
-GPU_ARCHIVE_SIZE_LIMIT = 10000                             # Larger archive with GPU memory (increased)
+GPU_ARCHIVE_SIZE_LIMIT = 20000                             # Larger archive with dual GPU memory (increased)
 GPU_CACHE_BEHAVIOR_VECTORS = True                          # Cache behavior vectors in GPU memory
 
 # GPU Performance Settings

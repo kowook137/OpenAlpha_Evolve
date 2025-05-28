@@ -9,6 +9,7 @@ import numpy as np
 from typing import List, Dict, Any, Optional, Tuple, Set
 from dataclasses import dataclass
 import hashlib
+import asyncio
 
 from core.interfaces import MAPElitesInterface, Program, BehaviorCharacteristics
 
@@ -31,6 +32,14 @@ class GPUMAPElites(MAPElitesInterface):
         
         # GPU 설정
         self.device = self._setup_gpu()
+        
+        # 기본 행동 공간 설정
+        self.behavior_space = self.config.get("behavior_space", {
+            "code_complexity": {"resolution": 10, "bounds": (0.0, 1.0)},
+            "execution_time": {"resolution": 10, "bounds": (0.0, 1.0)},
+            "memory_usage": {"resolution": 8, "bounds": (0.0, 1.0)},
+            "solution_approach": {"resolution": 8, "bounds": (0, 7)}
+        })
         
         # GPU 최적화 설정
         self.batch_size = self.config.get("gpu_batch_size", 64)
@@ -433,4 +442,87 @@ class GPUMAPElites(MAPElitesInterface):
                 raise ValueError(f"Unknown action: {action}")
         except Exception as e:
             logger.error(f"Error executing GPU MAP-Elites action '{action}': {e}")
-            raise 
+            raise
+
+    def get_behavior_descriptor(self, program: Program) -> tuple:
+        """프로그램의 행동 기술자 반환 (동기 버전)"""
+        # 비동기 메서드를 동기적으로 호출하기 위한 래퍼
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # 이미 실행 중인 루프가 있는 경우
+                return self._get_simple_behavior_descriptor(program)
+            else:
+                behavior_chars = loop.run_until_complete(self.calculate_behavior_characteristics(program))
+                return behavior_chars.to_tuple()
+        except RuntimeError:
+            # 루프가 없는 경우 간단한 버전 사용
+            return self._get_simple_behavior_descriptor(program)
+    
+    def _get_simple_behavior_descriptor(self, program: Program) -> tuple:
+        """간단한 행동 기술자 계산 (동기 버전)"""
+        # 코드 복잡도 (라인 수 기반)
+        code_lines = len([line for line in program.code.split('\n') if line.strip()])
+        complexity = min(code_lines / 50.0, 1.0)  # 50라인을 최대로 정규화
+        
+        # 실행 시간 (피트니스 기반 추정)
+        execution_time = 1.0 - program.fitness_scores.get("score", 0.0)
+        
+        # 메모리 사용량 (코드 길이 기반 추정)
+        memory_usage = min(len(program.code) / 5000.0, 1.0)  # 5000자를 최대로 정규화
+        
+        # 솔루션 접근법 (코드 패턴 기반)
+        approach = 0
+        if 'for' in program.code or 'while' in program.code:
+            approach += 1
+        if 'def' in program.code:
+            approach += 2
+        if 'class' in program.code:
+            approach += 4
+        
+        return (complexity, execution_time, memory_usage, approach)
+    
+    def update_archive(self, program: Program) -> bool:
+        """단일 프로그램을 아카이브에 업데이트 (동기 버전)"""
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                # 이미 실행 중인 루프가 있는 경우 간단한 버전 사용
+                return self._simple_update_archive(program)
+            else:
+                result = loop.run_until_complete(self.add_to_archive([program]))
+                return result["added"] > 0 or result["replaced"] > 0
+        except RuntimeError:
+            # 루프가 없는 경우 간단한 버전 사용
+            return self._simple_update_archive(program)
+    
+    def _simple_update_archive(self, program: Program) -> bool:
+        """간단한 아카이브 업데이트 (동기 버전)"""
+        # 행동 기술자 계산
+        behavior_desc = self._get_simple_behavior_descriptor(program)
+        
+        # 셀 인덱스 계산 (간단한 버전)
+        cell_idx = 0
+        multiplier = 1
+        for i, (value, resolution) in enumerate(zip(behavior_desc, self.gpu_behavior_space.resolution)):
+            bin_idx = min(int(value * resolution), resolution - 1)
+            cell_idx += bin_idx * multiplier
+            multiplier *= resolution
+        
+        # 피트니스 점수
+        fitness = program.fitness_scores.get("score", program.fitness_scores.get("correctness", 0.0))
+        
+        # 아카이브 업데이트
+        if cell_idx in self.archive_programs:
+            current_fitness = self.archive_tensor[cell_idx].item() if torch.cuda.is_available() else 0.0
+            if fitness > current_fitness:
+                if torch.cuda.is_available():
+                    self.archive_tensor[cell_idx] = fitness
+                self.archive_programs[cell_idx] = program
+                return True
+            return False
+        else:
+            if torch.cuda.is_available():
+                self.archive_tensor[cell_idx] = fitness
+            self.archive_programs[cell_idx] = program
+            return True 

@@ -26,12 +26,28 @@ class GPUMigrationPolicy(MigrationPolicyInterface):
         # GPU 설정
         self.device = self._setup_gpu()
         
+        # 기본 이주 설정
+        self.migration_interval = self.config.get("migration_interval", 5)
+        self.base_migration_rate = self.config.get("migration_rate", 0.1)
+        self.max_migration_rate = self.config.get("max_migration_rate", 0.3)
+        self.diversity_threshold = self.config.get("diversity_threshold", 0.1)
+        
+        # 토폴로지 설정
+        topology_str = self.config.get("topology", "ring")
+        if isinstance(topology_str, str):
+            self.topology = MigrationTopology(topology_str)
+        else:
+            self.topology = topology_str
+        
         # GPU 최적화 설정
         self.batch_migration = self.config.get("batch_migration", True)
         self.use_gpu_sorting = self.config.get("use_gpu_sorting", True)
         self.migration_tensor_cache = {}
         
         logger.info(f"GPUMigrationPolicy initialized on {self.device}")
+        logger.info(f"  Topology: {self.topology.value}")
+        logger.info(f"  Migration interval: {self.migration_interval}")
+        logger.info(f"  Migration rate: {self.base_migration_rate}")
     
     def _setup_gpu(self) -> torch.device:
         """GPU 설정"""
@@ -409,6 +425,54 @@ class GPUMigrationPolicy(MigrationPolicyInterface):
             })
         
         return base_stats
+    
+    def select_destination_islands(self, source_island: Island, all_islands: List[Island]) -> List[Island]:
+        """GPU 가속 목적지 island 선택"""
+        if not all_islands or len(all_islands) <= 1:
+            return []
+        
+        # 소스 island 제외
+        possible_destinations = [island for island in all_islands if island.id != source_island.id]
+        
+        if not possible_destinations:
+            return []
+        
+        with torch.cuda.device(self.device):
+            # 토폴로지에 따른 목적지 선택
+            if self.topology == MigrationTopology.RING:
+                # 링 토폴로지: 다음 island만 선택
+                source_idx = next((i for i, island in enumerate(all_islands) if island.id == source_island.id), -1)
+                if source_idx >= 0:
+                    target_idx = (source_idx + 1) % len(all_islands)
+                    return [all_islands[target_idx]]
+                return []
+            
+            elif self.topology == MigrationTopology.FULLY_CONNECTED:
+                # 완전 연결: 모든 다른 island
+                return possible_destinations
+            
+            elif self.topology == MigrationTopology.STAR:
+                # 스타 토폴로지: 허브 또는 위성들
+                hub_island = all_islands[0]  # 첫 번째를 허브로 가정
+                
+                if source_island.id == hub_island.id:
+                    # 허브에서 모든 위성으로
+                    return [island for island in all_islands[1:]]
+                else:
+                    # 위성에서 허브로만
+                    return [hub_island]
+            
+            else:  # RANDOM
+                # 랜덤: GPU에서 확률적 선택
+                if len(possible_destinations) == 1:
+                    return possible_destinations
+                
+                # GPU에서 랜덤 선택 (1-3개 목적지)
+                num_destinations = min(3, len(possible_destinations))
+                selected_indices = torch.randperm(len(possible_destinations), device=self.device)[:num_destinations]
+                selected_indices_cpu = selected_indices.cpu().numpy()
+                
+                return [possible_destinations[i] for i in selected_indices_cpu]
     
     def cleanup_gpu_cache(self):
         """GPU 캐시 정리"""

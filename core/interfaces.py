@@ -30,6 +30,37 @@ class EvolutionStrategy(enum.Enum):
     BALANCED = "balanced"         # Mix of both
     RANDOM = "random"            # Random mutations
 
+class MigrationTopology(enum.Enum):
+    """Different migration topologies for island model"""
+    RING = "ring"                    # Islands connected in a ring
+    FULLY_CONNECTED = "fully_connected"  # All islands connected to all
+    STAR = "star"                    # Hub-and-spoke topology
+    RANDOM = "random"                # Random connections each migration
+
+@dataclass
+class BehaviorCharacteristics:
+    """Represents behavior characteristics for MAP-Elites"""
+    code_complexity: float = 0.0      # Complexity score (0-1)
+    execution_time: float = 0.0       # Normalized execution time (0-1)
+    memory_usage: float = 0.0         # Normalized memory usage (0-1)
+    solution_approach: int = 0        # Solution approach category (0-N)
+    
+    def to_tuple(self) -> tuple:
+        """Convert to tuple for use as dictionary key"""
+        return (self.code_complexity, self.execution_time, self.memory_usage, self.solution_approach)
+    
+    def to_bins(self, dimension_bins: Dict[str, int]) -> tuple:
+        """Convert to binned tuple for MAP-Elites grid"""
+        complexity_bin = min(int(self.code_complexity * dimension_bins.get("code_complexity", 5)), 
+                            dimension_bins.get("code_complexity", 5) - 1)
+        time_bin = min(int(self.execution_time * dimension_bins.get("execution_time", 5)), 
+                      dimension_bins.get("execution_time", 5) - 1)
+        memory_bin = min(int(self.memory_usage * dimension_bins.get("memory_usage", 3)), 
+                        dimension_bins.get("memory_usage", 3) - 1)
+        approach_bin = min(self.solution_approach, dimension_bins.get("solution_approach", 8) - 1)
+        
+        return (complexity_bin, time_bin, memory_bin, approach_bin)
+
 @dataclass
 class Island:
     """Represents an island in the island model"""
@@ -66,14 +97,12 @@ class MigrationEvent:
 
 class BaseAgent(ABC):
     """Base class for all agents."""
-    @abstractmethod
     def __init__(self, config: Optional[Dict[str, Any]] = None):
         self.config = config or {}
 
-    @abstractmethod
     async def execute(self, *args, **kwargs) -> Any:
-        """Main execution method for an agent."""
-        pass
+        """Main execution method for an agent. Override in subclasses if needed."""
+        raise NotImplementedError("execute method must be implemented in subclass")
 
 class TaskManagerInterface(BaseAgent):
     @abstractmethod
@@ -145,11 +174,11 @@ class IslandManagerInterface(BaseAgent):
 
 class MigrationPolicyInterface(BaseAgent):
     @abstractmethod
-    def should_migrate(self, generation: int) -> bool:
+    async def should_migrate(self, islands: List[Island], generation: int) -> bool:
         pass
     
     @abstractmethod
-    def select_migrants(self, source_island: Island, num_migrants: int) -> List[Program]:
+    async def select_migrants(self, islands: List[Island], generation: int) -> List[MigrationEvent]:
         pass
     
     @abstractmethod
