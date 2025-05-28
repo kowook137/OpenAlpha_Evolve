@@ -4,10 +4,16 @@ python-dotenv>=1.0.0
 
 # LLM Models & Frameworks
 # transformers
-# torch
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
 # accelerate
 # bitsandbytes # For quantization if needed
 # sentencepiece
+
+# GPU Acceleration (RTX 3080 Support)
+numpy>=1.21.0
+# CUDA toolkit will be installed separately
 
 # Evolutionary Algorithms / RL
 # deap
