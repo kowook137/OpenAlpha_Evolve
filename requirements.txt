@@ -1,37 +1,29 @@
-# Core Libraries
-openai  # For openai compatible LLMs
-# langchain
-# langchain-google-genai # Or similar for Gemini integration
-python-dotenv # For managing environment variables
+# Core Dependencies
+google-generativeai>=0.3.0
+python-dotenv>=1.0.0
 
-# LLM Models & Frameworks
-# transformers
-# torch
-# accelerate
-# bitsandbytes # For quantization if needed
-# sentencepiece
+# GPU Acceleration (RTX 3080 Support)
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+numpy>=1.21.0
 
-# Evolutionary Algorithms / RL
-# deap
-# pygad
-# ray[rllib]
-# stable-baselines3
+# Scientific Computing
+scipy>=1.9.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
 
-# Evaluation & Sandboxing
-# pytest
-# hypothesis
-# e2b-sdk  # For E2B sandbox
-# docker
-
-# Data Storage
-# psycopg2-binary  # For PostgreSQL
-# pymongo  # For MongoDB
-# dvc
+# Async Programming
+asyncio>=3.4.3
 
 # Utilities
-# jinja2
+uuid>=1.30
+gradio>=4.0.0
 
-# API/Web
-gradio>=3.40.0  # Web interface for OpenAlpha_Evolve
-# fastapi
-# uvicorn 
+# Optional: Advanced Features
+# transformers  # For additional LLM support
+# accelerate    # For GPU optimization
+# deap         # For genetic algorithms
+# ray[rllib]   # For distributed computing
+# pytest       # For testing
+# docker       # For sandboxing
