@@ -1,8 +1,15 @@
-                        
-from typing import Optional, Dict, Any
+import os
+import sys
 import logging
+from typing import Optional, Dict, Any, List
+
+# Add the project root to the path
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from core.interfaces import PromptDesignerInterface, Program, TaskDefinition, BaseAgent
+from core.evolve_block_parser import EvolveBlockParser, EvolveBlock
 
 logger = logging.getLogger(__name__)
 
@@ -10,149 +17,230 @@ class PromptDesignerAgent(PromptDesignerInterface, BaseAgent):
     def __init__(self, task_definition: TaskDefinition):
         super().__init__()
         self.task_definition = task_definition
-        logger.info(f"PromptDesignerAgent initialized for task: {self.task_definition.id}")
+        self.parser = EvolveBlockParser()
+        logger.info(f"AlphaEvolve PromptDesignerAgent initialized for task: {self.task_definition.id}")
 
     def design_initial_prompt(self) -> str:
         logger.info(f"Designing initial prompt for task: {self.task_definition.id}")
+        
+        # Provide template with EVOLVE-BLOCK structure
+        template = f"""def {self.task_definition.function_name_to_evolve}():
+    \"\"\"
+    {self.task_definition.description}
+    \"\"\"
+    
+    # EVOLVE-BLOCK-START
+    # Generate first 3x3 latin square
+    square1 = [[0, 1, 2], [1, 2, 0], [2, 0, 1]]
+    
+    # Generate second 3x3 latin square  
+    square2 = [[0, 1, 2], [2, 0, 1], [1, 2, 0]]
+    
+    # Return both squares as MOLS
+    result = [square1, square2]
+    # EVOLVE-BLOCK-END
+    
+    return result
+"""
                                                            
         prompt = (
-            f"You are an expert Python programmer. Your task is to write a Python function based on the following specifications.\n\n"
-            f"Task Description: {self.task_definition.description}\n\n"
-            f"Function to Implement: `{self.task_definition.function_name_to_evolve}`\n\n"
-            f"Input/Output Examples:\n"
-                                         
-            f"{self._format_input_output_examples()}\n\n"
-            f"Evaluation Criteria: {self.task_definition.evaluation_criteria}\n\n"
-            f"Allowed Standard Library Imports: {self.task_definition.allowed_imports}. Do not use any other external libraries or packages.\n\n"
-            f"Your Response Format:\n"
-            f"Please provide *only* the complete Python code for the function `{self.task_definition.function_name_to_evolve}`. "
-            f"The code should be self-contained or rely only on the allowed imports. "
-            f"Do not include any surrounding text, explanations, comments outside the function, or markdown code fences (like ```python or ```)."
+            f"🚨 CRITICAL: You MUST use the exact template provided below. DO NOT create new code structure!\n\n"
+            
+            f"You are completing this code template for: {self.task_definition.description}\n\n"
+            
+            f"MANDATORY TEMPLATE (YOU MUST USE THIS EXACT STRUCTURE):\n"
+            f"```python\n{template}\n```\n\n"
+            
+            f"🚨 STRICT REQUIREMENTS:\n"
+            f"1. KEEP the EVOLVE-BLOCK-START and EVOLVE-BLOCK-END markers EXACTLY as they are\n"
+            f"2. ONLY modify the algorithm code BETWEEN the EVOLVE-BLOCK markers\n"
+            f"3. DO NOT change the function signature or return statement location\n"
+            f"4. DO NOT remove or modify the EVOLVE-BLOCK structure\n"
+            f"5. Use only these imports: {self.task_definition.allowed_imports}\n\n"
+            
+            f"Task specifications:\n{self._format_input_output_examples()}\n\n"
+            
+            f"Return the COMPLETE code with EVOLVE-BLOCK structure preserved and your improved algorithm between the markers."
         )
-        logger.debug(f"Designed initial prompt:\n--PROMPT START--\n{prompt}\n--PROMPT END--")
+        logger.debug(f"Designed initial prompt of length: {len(prompt)}")
         return prompt
+
+    def design_mutation_prompt(self, program: Program, evaluation_feedback: Optional[Dict[str, Any]] = None) -> str:
+        logger.info(f"Designing mutation prompt for program: {program.id}")
+        
+        feedback_summary = self._format_evaluation_feedback(program, evaluation_feedback)
+
+        prompt = (
+            f"You are an expert Python programmer. Improve this algorithm:\n\n"
+            f"Current code:\n```python\n{program.code}\n```\n\n"
+            f"Performance feedback:\n{feedback_summary}\n\n"
+            f"Task: {self.task_definition.description}\n\n"
+            f"🚨 CRITICAL: PRESERVE EVOLVE-BLOCK MARKERS!\n"
+            f"- Keep all # EVOLVE-BLOCK-START and # EVOLVE-BLOCK-END markers exactly as they are\n"
+            f"- Only modify the code INSIDE the EVOLVE-BLOCK markers\n"
+            f"- Do NOT remove or change the EVOLVE-BLOCK structure\n\n"
+            f"Provide improvements using this diff format:\n"
+            f"<<<<<<< SEARCH\n"
+            f"exact code to find and replace (including EVOLVE-BLOCK markers)\n"
+            f"=======\n"
+            f"improved replacement code (preserving EVOLVE-BLOCK markers)\n"
+            f">>>>>>> REPLACE\n\n"
+            f"Focus on algorithmic improvements INSIDE EVOLVE-BLOCKS to increase correctness and performance."
+        )
+        
+        logger.debug(f"Designed mutation prompt of length: {len(prompt)}")
+        return prompt
+
+    def _select_components_for_evolution(self, components: Dict[str, List[EvolveBlock]], 
+                                       evaluation_feedback: Optional[Dict[str, Any]] = None) -> List[str]:
+        """Select which components should be evolved based on feedback"""
+        to_evolve = []
+        
+        if not evaluation_feedback:
+            # Default: evolve main functions and configs
+            if components['functions']:
+                to_evolve.append('functions')
+            if components['configs']:
+                to_evolve.append('configs')
+        else:
+            score = evaluation_feedback.get('score', 0.0)
+            
+            if score < 0.3:
+                # Low score: major algorithmic changes needed
+                to_evolve.extend(['imports', 'functions', 'configs'])
+            elif score < 0.7:
+                # Medium score: optimize functions and configs
+                to_evolve.extend(['functions', 'configs'])
+            else:
+                # High score: fine-tune configurations
+                to_evolve.append('configs')
+        
+        return to_evolve
+
+    def _format_component_summary(self, components: Dict[str, List[EvolveBlock]]) -> str:
+        """Format a summary of the algorithm components"""
+        summary_lines = []
+        
+        for comp_type, blocks in components.items():
+            if blocks:
+                block_names = [f"'{block.id}'" for block in blocks]
+                summary_lines.append(f"- {comp_type.title()}: {', '.join(block_names)}")
+        
+        return '\n'.join(summary_lines) if summary_lines else "No components found"
 
     def _format_input_output_examples(self) -> str:
         if not self.task_definition.input_output_examples:
             return "No input/output examples provided."
+        
         formatted_examples = []
         for i, example in enumerate(self.task_definition.input_output_examples):
             input_str = str(example.get('input'))
             output_str = str(example.get('output'))
-            formatted_examples.append(f"Example {i+1}:\n  Input: {input_str}\n  Expected Output: {output_str}")
-        return "\n".join(formatted_examples)
+            
+            example_text = f"Example {i+1}:\n  Input: {input_str}\n  Expected Output: {output_str}"
+            
+            # Add explanation if provided (AlphaEvolve style)
+            explanation = example.get('explanation')
+            if explanation:
+                example_text += f"\n  Explanation: {explanation}"
+            
+            # Add skeleton code if provided (AlphaEvolve style)
+            skeleton = example.get('skeleton')
+            if skeleton:
+                example_text += f"\n  Code Skeleton:\n{skeleton}"
+            
+            formatted_examples.append(example_text)
+        
+        return "\n\n".join(formatted_examples)
 
     def _format_evaluation_feedback(self, program: Program, evaluation_feedback: Optional[Dict[str, Any]]) -> str:
         if not evaluation_feedback:
-            return "No detailed evaluation feedback is available for the previous version of this code. Attempt a general improvement or refinement."
-
-        correctness = evaluation_feedback.get("correctness_score", None)
-        runtime = evaluation_feedback.get("runtime_ms", None)
-        errors = evaluation_feedback.get("errors", [])                          
-                                                                                               
-        stderr = evaluation_feedback.get("stderr", None)
+            return "No detailed evaluation feedback available. Attempt general algorithmic improvements."
 
         feedback_parts = []
-        if correctness is not None:
-            feedback_parts.append(f"- Correctness Score: {correctness*100:.2f}%")
+        
+        # Core metrics
+        score = evaluation_feedback.get("score", evaluation_feedback.get("correctness_score"))
+        if score is not None:
+            feedback_parts.append(f"- Overall Score: {score:.3f}")
+        
+        # Specific MOLS metrics
+        latin_score = evaluation_feedback.get("latin_score")
+        if latin_score is not None:
+            feedback_parts.append(f"- Latin Square Quality: {latin_score:.3f}")
+            
+        orthogonality_score = evaluation_feedback.get("orthogonality_score")
+        if orthogonality_score is not None:
+            feedback_parts.append(f"- Orthogonality Quality: {orthogonality_score:.3f}")
+        
+        runtime = evaluation_feedback.get("runtime_ms")
         if runtime is not None:
             feedback_parts.append(f"- Runtime: {runtime:.2f} ms")
         
+        errors = evaluation_feedback.get("errors", [])
         if errors:
             error_messages = "\n".join([f"  - {e}" for e in errors])
-            feedback_parts.append(f"- Errors Encountered During Evaluation:\n{error_messages}")
-        elif stderr:
-            feedback_parts.append(f"- Standard Error Output During Execution:\n{stderr}")
-        elif correctness is not None and correctness < 1.0:
-            feedback_parts.append("- The code did not achieve 100% correctness but produced no explicit errors or stderr. Review logic for test case failures.")
-        elif correctness == 1.0:
-            feedback_parts.append("- The code achieved 100% correctness. Consider optimizing for efficiency or exploring alternative correct solutions.")
+            feedback_parts.append(f"- Errors:\n{error_messages}")
         
-        if not feedback_parts:
-             return "The previous version was evaluated, but no specific feedback details were captured. Try a general improvement."
-
-        return "Summary of the previous version's evaluation:\n" + "\n".join(feedback_parts)
-
-    def design_mutation_prompt(self, program: Program, evaluation_feedback: Optional[Dict[str, Any]] = None) -> str:
-        logger.info(f"Designing mutation prompt for program: {program.id} (Generation: {program.generation})")
-        logger.debug(f"Parent program code (to be mutated):\n{program.code}")
+        # Performance analysis
+        if score is not None:
+            if score < 0.3:
+                feedback_parts.append("- Analysis: Major algorithmic improvements needed")
+            elif score < 0.7:
+                feedback_parts.append("- Analysis: Good foundation, needs optimization")
+            else:
+                feedback_parts.append("- Analysis: High-performing algorithm, fine-tuning opportunities")
         
-        feedback_summary = self._format_evaluation_feedback(program, evaluation_feedback)
-        logger.debug(f"Formatted evaluation feedback for prompt:\n{feedback_summary}")
-
-        diff_instructions = (
-            "Your Response Format:\n"
-            "Propose improvements to the 'Current Code' below by providing your changes as a sequence of diff blocks. "
-            "Each diff block must follow this exact format:\n"
-            "<<<<<<< SEARCH\n"
-            "# Exact original code lines to be found and replaced\n"
-            "=======\n"
-            "# New code lines to replace the original\n"
-            ">>>>>>> REPLACE\n\n"
-            "- The SEARCH block must be an *exact* segment from the 'Current Code'. Do not paraphrase or shorten it."
-            "- If you are adding new code where nothing existed, the SEARCH block can be a comment indicating the location, or an adjacent existing line."
-            "- If you are deleting code, the REPLACE block should be empty."
-            "- Provide all suggested changes as one or more such diff blocks. Do not include any other text, explanations, or markdown outside these blocks."
-        )
-
-        prompt = (
-            f"You are an expert Python programmer. Your task is to improve an existing Python function based on its previous performance and the overall goal.\n\n"
-            f"Overall Task Description: {self.task_definition.description}\n\n"
-            f"Function to Improve: `{self.task_definition.function_name_to_evolve}`\n\n"
-            f"Allowed Standard Library Imports: {self.task_definition.allowed_imports}. Do not use other external libraries or packages.\n\n"
-            f"Current Code (Version from Generation {program.generation}):\n"
-            f"```python\n{program.code}\n```\n\n"
-            f"Evaluation Feedback on the 'Current Code':\n{feedback_summary}\n\n"
-            f"Your Improvement Goal:\n"
-            f"Based on the task, the 'Current Code', and its 'Evaluation Feedback', your goal is to propose modifications to improve the function `{self.task_definition.function_name_to_evolve}`. "
-            f"Prioritize fixing any errors or correctness issues. If correct, focus on improving efficiency or exploring alternative robust logic. "
-            f"Consider the original evaluation criteria: {self.task_definition.evaluation_criteria}\n\n"
-            f"{diff_instructions}"
-        )
-        logger.debug(f"Designed mutation prompt (requesting diff):\n--PROMPT START--\n{prompt}\n--PROMPT END--")
-        return prompt
+        return "\n".join(feedback_parts) if feedback_parts else "Evaluation completed, no specific issues identified."
 
     def design_bug_fix_prompt(self, program: Program, error_message: str, execution_output: Optional[str] = None) -> str:
-        logger.info(f"Designing bug-fix prompt for program: {program.id} (Generation: {program.generation})")
-        logger.debug(f"Buggy program code:\n{program.code}")
-        logger.debug(f"Primary error message: {error_message}")
-        if execution_output:
-            logger.debug(f"Additional execution output (stdout/stderr): {execution_output}")
-
-        output_segment = f"Execution Output (stdout/stderr that might be relevant):\n{execution_output}\n" if execution_output else "No detailed execution output was captured beyond the error message itself.\n"
+        logger.info(f"Designing AlphaEvolve bug-fix prompt for program: {program.id}")
         
-        diff_instructions = (
-            "Your Response Format:\n"
-            "Propose fixes to the 'Buggy Code' below by providing your changes as a sequence of diff blocks. "
-            "Each diff block must follow this exact format:\n"
-            "<<<<<<< SEARCH\n"
-            "# Exact original code lines to be found and replaced\n"
-            "=======\n"
-            "# New code lines to replace the original\n"
-            ">>>>>>> REPLACE\n\n"
-            "- The SEARCH block must be an *exact* segment from the 'Buggy Code'."
-            "- Provide all suggested changes as one or more such diff blocks. Do not include any other text, explanations, or markdown outside these blocks."
-        )
-
+        # Parse the current program to identify problematic components
+        parsed_result = self.parser.parse_code(program.code)
+        evolve_blocks = parsed_result['evolve_blocks']
+        
+        output_segment = f"Execution Output:\n{execution_output}\n" if execution_output else ""
+        
         prompt = (
-            f"You are an expert Python programmer. Your task is to fix a bug in an existing Python function.\n\n"
-            f"Overall Task Description: {self.task_definition.description}\n\n"
-            f"Function to Fix: `{self.task_definition.function_name_to_evolve}`\n\n"
-            f"Allowed Standard Library Imports: {self.task_definition.allowed_imports}. Do not use other external libraries or packages.\n\n"
-            f"Buggy Code (Version from Generation {program.generation}):\n"
+            f"You are an expert algorithm designer using AlphaEvolve methodology. "
+            f"Your task is to fix bugs in a multi-component algorithmic solution.\n\n"
+            
+            f"**Task:** {self.task_definition.description}\n\n"
+            
+            f"**Buggy Algorithm (Generation {program.generation}):**\n"
             f"```python\n{program.code}\n```\n\n"
-            f"Error Encountered: {error_message}\n"
+            
+            f"**Error Encountered:** {error_message}\n"
             f"{output_segment}\n"
-            f"Your Goal:\n"
-            f"Analyze the 'Buggy Code', the 'Error Encountered', and any 'Execution Output' to identify and fix the bug(s). "
-            f"The corrected function must adhere to the overall task description and allowed imports.\n\n"
-            f"{diff_instructions}"
+            
+            f"**Algorithm Components:** {len(evolve_blocks)} EVOLVE-BLOCKS found\n\n"
+            
+            f"**Fix Strategy:**\n"
+            f"1. Identify which EVOLVE-BLOCK(s) contain the bug\n"
+            f"2. Consider component interactions that might cause the error\n"
+            f"3. Apply targeted fixes while maintaining algorithm integrity\n"
+            f"4. Ensure all components work together correctly\n\n"
+            
+            f"**Response Format:**\n"
+            f"Provide fixes as diff blocks targeting specific EVOLVE-BLOCK sections:\n"
+            f"<<<<<<< SEARCH\n"
+            f"# EVOLVE-BLOCK-START\n"
+            f"# Exact buggy code\n"
+            f"# EVOLVE-BLOCK-END\n"
+            f"=======\n"
+            f"# EVOLVE-BLOCK-START\n"
+            f"# Fixed code\n"
+            f"# EVOLVE-BLOCK-END\n"
+            f">>>>>>> REPLACE\n\n"
+            f"Focus on the root cause and make minimal but effective changes."
         )
-        logger.debug(f"Designed bug-fix prompt (requesting diff):\n--PROMPT START--\n{prompt}\n--PROMPT END--")
+        
+        logger.debug(f"Designed AlphaEvolve bug-fix prompt:\n--PROMPT START--\n{prompt}\n--PROMPT END--")
         return prompt
 
     async def execute(self, *args, **kwargs) -> Any:
-        raise NotImplementedError("PromptDesignerAgent.execute() is not the primary way to use this agent. Call specific design methods.")
+        raise NotImplementedError("PromptDesignerAgent.execute() not implemented. Use specific design methods.")
 
                 
 if __name__ == '__main__':

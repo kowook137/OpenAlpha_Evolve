@@ -101,9 +101,12 @@ class IslandTaskManager(TaskManagerInterface):
             for i in range(self.population_per_island):
                 program_id = f"{self.task_definition.id}_{island.id}_gen0_prog{i}"
                 
-                # Generate initial code
-                initial_prompt = self.prompt_designer.design_initial_prompt()
-                generated_code = await self.code_generator.generate_code(initial_prompt, temperature=0.8)
+                # Generate initial code using EVOLVE-BLOCK template
+                generated_code = await self.code_generator.generate_initial_code_with_template(
+                    task_description=self.task_definition.description,
+                    function_name=self.task_definition.function_name_to_evolve,
+                    generation=0
+                )
                 
                 program = Program(
                     id=program_id,
@@ -130,8 +133,11 @@ class IslandTaskManager(TaskManagerInterface):
         
         for i in range(settings.POPULATION_SIZE):
             program_id = f"{self.task_definition.id}_single_gen0_prog{i}"
-            initial_prompt = self.prompt_designer.design_initial_prompt()
-            generated_code = await self.code_generator.generate_code(initial_prompt, temperature=0.8)
+            generated_code = await self.code_generator.generate_initial_code_with_template(
+                task_description=self.task_definition.description,
+                function_name=self.task_definition.function_name_to_evolve,
+                generation=0
+            )
             
             program = Program(
                 id=program_id,
@@ -313,14 +319,15 @@ class IslandTaskManager(TaskManagerInterface):
             # Determine prompt type based on parent's performance
             if parent.errors and parent.fitness_scores.get("score", 0.0) < 0.1:
                 prompt_type = "bug_fix"
-                error_info = {"errors": parent.errors, "fitness": parent.fitness_scores}
-                prompt = self.prompt_designer.design_bug_fix_prompt(self.task_definition, parent, error_info)
+                error_message = parent.errors[0] if parent.errors else "Unknown error"
+                prompt = self.prompt_designer.design_bug_fix_prompt(parent, error_message)
             else:
                 prompt_type = "mutation"
-                prompt = self.prompt_designer.design_mutation_prompt(self.task_definition, parent)
+                evaluation_feedback = parent.fitness_scores if hasattr(parent, 'fitness_scores') else None
+                prompt = self.prompt_designer.design_mutation_prompt(parent, evaluation_feedback)
             
-            # Generate code
-            generated_code = await self.code_generator.generate_code(prompt, temperature=0.7, output_format="diff")
+            # Generate code with generation info for model selection
+            generated_code = await self.code_generator.generate_code(prompt, temperature=0.7, output_format="diff", generation=generation)
             
             child = Program(
                 id=child_id,

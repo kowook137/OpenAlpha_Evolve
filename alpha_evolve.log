@@ -1,0 +1,513 @@
+2025-05-29 16:39:08,730 - __main__ - INFO - Starting OpenAlpha_Evolve with Island Model for MOLS generation
+2025-05-29 16:39:08,730 - __main__ - INFO - ================================================================================
+2025-05-29 16:39:08,730 - __main__ - INFO - Island Model Configuration:
+2025-05-29 16:39:08,730 - __main__ - INFO -   Enabled: True
+2025-05-29 16:39:08,730 - __main__ - INFO -   Number of Islands: 4
+2025-05-29 16:39:08,730 - __main__ - INFO -   Population per Island: 8
+2025-05-29 16:39:08,730 - __main__ - INFO -   Migration Interval: 4 generations
+2025-05-29 16:39:08,730 - __main__ - INFO -   Migration Rate: 0.2
+2025-05-29 16:39:08,730 - __main__ - INFO -   Migration Topology: ring
+2025-05-29 16:39:08,730 - __main__ - INFO -   Elite Migration: True
+2025-05-29 16:39:08,730 - __main__ - INFO - MAP-Elites Configuration:
+2025-05-29 16:39:08,730 - __main__ - INFO -   Enabled: True
+2025-05-29 16:39:08,730 - __main__ - INFO -   Config: default
+2025-05-29 16:39:08,730 - __main__ - INFO -   Behavior Dimensions: ['code_complexity', 'execution_time', 'solution_approach']
+2025-05-29 16:39:08,731 - __main__ - INFO - Parallel Processing Configuration:
+2025-05-29 16:39:08,731 - __main__ - INFO -   Max Parallel Islands: 4
+2025-05-29 16:39:08,731 - __main__ - INFO -   Evolution Timeout: 300s
+2025-05-29 16:39:08,731 - __main__ - INFO -   Evaluation Batch Size: 5
+2025-05-29 16:39:08,731 - __main__ - INFO - ================================================================================
+2025-05-29 16:39:08,731 - __main__ - INFO - Total Population Size: 32
+2025-05-29 16:39:08,731 - __main__ - INFO - Generations: 40
+2025-05-29 16:39:08,731 - __main__ - INFO - LLM Models: Pro=gemini-1.5-pro, Flash=gemini-1.5-flash, Eval=gemini-2.5-flash-preview-05-20
+2025-05-29 16:39:08,731 - prompt_designer.agent - INFO - AlphaEvolve PromptDesignerAgent initialized for task: generate_3x3_MOLS_discovery
+2025-05-29 16:39:08,731 - code_generator.agent - INFO - CodeGeneratorAgent initialized with model: gemini-1.5-pro
+2025-05-29 16:39:08,731 - code_generator.agent - INFO - Initializing models: Flash=gemini-1.5-flash, Pro=gemini-1.5-pro
+2025-05-29 16:39:08,731 - code_generator.agent - INFO - AlphaEvolve CodeGenerator initialized:
+2025-05-29 16:39:08,731 - code_generator.agent - INFO -   Flash Model: gemini-1.5-flash
+2025-05-29 16:39:08,731 - code_generator.agent - INFO -   Pro Model: gemini-1.5-pro
+2025-05-29 16:39:08,731 - code_generator.agent - INFO -   Ensemble Mode: True
+2025-05-29 16:39:08,731 - database_agent.agent - INFO - InMemoryDatabaseAgent initialized.
+2025-05-29 16:39:08,731 - selection_controller.agent - INFO - SelectionControllerAgent initialized with elitism_count: 2
+2025-05-29 16:39:08,731 - core.island_manager - INFO - IslandManager initialized with max_workers: 8
+2025-05-29 16:39:08,731 - core.migration_policy - INFO - MigrationPolicy initialized: interval=4, rate=0.2, topology=ring
+2025-05-29 16:39:08,731 - core.map_elites - INFO - MAP-Elites initialized with dimensions: ['code_complexity', 'execution_time', 'solution_approach']
+2025-05-29 16:39:08,731 - core.map_elites - INFO - Dimension bins: {'code_complexity': 5, 'execution_time': 5, 'solution_approach': 8}
+2025-05-29 16:39:08,732 - task_manager.island_task_manager - INFO - IslandTaskManager initialized:
+2025-05-29 16:39:08,732 - task_manager.island_task_manager - INFO -   Island Model: Enabled
+2025-05-29 16:39:08,732 - task_manager.island_task_manager - INFO -   Islands: 4, Population per island: 8
+2025-05-29 16:39:08,732 - task_manager.island_task_manager - INFO -   Total population: 32
+2025-05-29 16:39:08,732 - task_manager.island_task_manager - INFO -   MAP-Elites: Enabled
+2025-05-29 16:39:08,732 - __main__ - INFO - Initialized CPU-based Island Task Manager
+2025-05-29 16:39:08,732 - __main__ - INFO - Starting island-based evolution for MOLS generation...
+2025-05-29 16:39:08,732 - task_manager.island_task_manager - INFO - Starting island-based evolutionary cycle for task: Discover an algorithm to generate two 3x3 mutually...
+2025-05-29 16:39:08,732 - task_manager.island_task_manager - INFO - Initializing 4 islands with 8 programs each
+2025-05-29 16:39:08,732 - core.island_manager - INFO - Initializing 4 islands with 8 population each
+2025-05-29 16:39:08,732 - task_manager.island_task_manager - INFO - Generating initial population for island_0
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,732 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog0 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,732 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog1 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,732 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog2 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,732 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,733 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog3 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,733 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog4 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,733 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog5 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,733 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog6 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,733 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog7 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,733 - task_manager.island_task_manager - INFO - Generating initial population for island_1
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,733 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,733 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog0 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,734 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog1 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,734 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog2 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,734 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog3 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,734 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog4 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,734 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog5 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,734 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,735 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog6 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,735 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog7 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,735 - task_manager.island_task_manager - INFO - Generating initial population for island_2
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,735 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog0 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,735 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog1 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,735 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog2 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,735 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog3 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,735 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,736 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog4 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,736 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog5 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,736 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog6 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,736 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog7 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,736 - task_manager.island_task_manager - INFO - Generating initial population for island_3
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,736 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,737 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog0 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,737 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog1 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,737 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog2 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,737 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog3 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,737 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog4 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,737 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,738 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,738 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog5 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,738 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,738 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,738 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,738 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog6 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,738 - code_generator.agent - INFO - Generating initial code with EVOLVE-BLOCK template for: generate_MOLS_3
+2025-05-29 16:39:08,738 - code_generator.agent - INFO - Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure
+2025-05-29 16:39:08,738 - code_generator.agent - INFO - EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution
+2025-05-29 16:39:08,738 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog7 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,738 - task_manager.island_task_manager - INFO - Evaluating programs across 4 islands
+2025-05-29 16:39:08,738 - task_manager.island_task_manager - INFO - Evaluating 32 programs
+2025-05-29 16:39:08,739 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog0 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,739 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_0_gen0_prog0 already exists. It will be overwritten.
+2025-05-29 16:39:08,739 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog1 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,739 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_0_gen0_prog1 already exists. It will be overwritten.
+2025-05-29 16:39:08,739 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog2 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,739 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_0_gen0_prog2 already exists. It will be overwritten.
+2025-05-29 16:39:08,739 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog3 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,739 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_0_gen0_prog3 already exists. It will be overwritten.
+2025-05-29 16:39:08,739 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog4 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,739 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_0_gen0_prog4 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog5 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_0_gen0_prog5 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog6 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_0_gen0_prog6 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen0_prog7 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_0_gen0_prog7 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog0 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_1_gen0_prog0 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog1 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_1_gen0_prog1 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog2 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_1_gen0_prog2 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog3 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_1_gen0_prog3 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog4 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_1_gen0_prog4 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog5 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_1_gen0_prog5 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog6 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,740 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_1_gen0_prog6 already exists. It will be overwritten.
+2025-05-29 16:39:08,740 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen0_prog7 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,741 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_1_gen0_prog7 already exists. It will be overwritten.
+2025-05-29 16:39:08,741 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog0 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,741 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_2_gen0_prog0 already exists. It will be overwritten.
+2025-05-29 16:39:08,741 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog1 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,741 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_2_gen0_prog1 already exists. It will be overwritten.
+2025-05-29 16:39:08,741 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog2 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,741 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_2_gen0_prog2 already exists. It will be overwritten.
+2025-05-29 16:39:08,741 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog3 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,741 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_2_gen0_prog3 already exists. It will be overwritten.
+2025-05-29 16:39:08,741 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog4 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,741 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_2_gen0_prog4 already exists. It will be overwritten.
+2025-05-29 16:39:08,741 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog5 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,741 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_2_gen0_prog5 already exists. It will be overwritten.
+2025-05-29 16:39:08,742 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog6 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,742 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_2_gen0_prog6 already exists. It will be overwritten.
+2025-05-29 16:39:08,742 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen0_prog7 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,742 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_2_gen0_prog7 already exists. It will be overwritten.
+2025-05-29 16:39:08,742 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog0 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,742 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_3_gen0_prog0 already exists. It will be overwritten.
+2025-05-29 16:39:08,742 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog1 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,742 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_3_gen0_prog1 already exists. It will be overwritten.
+2025-05-29 16:39:08,742 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog2 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,742 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_3_gen0_prog2 already exists. It will be overwritten.
+2025-05-29 16:39:08,742 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog3 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,742 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_3_gen0_prog3 already exists. It will be overwritten.
+2025-05-29 16:39:08,742 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog4 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,742 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_3_gen0_prog4 already exists. It will be overwritten.
+2025-05-29 16:39:08,742 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog5 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,742 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_3_gen0_prog5 already exists. It will be overwritten.
+2025-05-29 16:39:08,742 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog6 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,743 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_3_gen0_prog6 already exists. It will be overwritten.
+2025-05-29 16:39:08,743 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen0_prog7 (Generation: 0) to in-memory database.
+2025-05-29 16:39:08,743 - database_agent.agent - WARNING - Program with ID generate_3x3_MOLS_discovery_island_3_gen0_prog7 already exists. It will be overwritten.
+2025-05-29 16:39:08,743 - task_manager.island_task_manager - INFO - Evaluation completed for 32 programs
+2025-05-29 16:39:08,743 - task_manager.island_task_manager - INFO - --- Generation 1/40 ---
+2025-05-29 16:39:08,743 - task_manager.island_task_manager - INFO - Evolving generation 1 across 4 islands
+2025-05-29 16:39:08,743 - core.island_manager - INFO - Starting parallel evolution of 4 islands
+2025-05-29 16:39:08,744 - core.island_manager - INFO - Parallel evolution completed for 4 islands
+2025-05-29 16:39:08,744 - selection_controller.agent - INFO - Starting parent selection. Population size: 4, Number of parents to select: 2
+2025-05-29 16:39:08,744 - selection_controller.agent - INFO - Selected 2 elite parents: ['generate_3x3_MOLS_discovery_island_0_gen0_prog0', 'generate_3x3_MOLS_discovery_island_0_gen0_prog1']
+2025-05-29 16:39:08,744 - selection_controller.agent - INFO - Elitism filled all parent slots or no more parents needed.
+2025-05-29 16:39:08,744 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_0_gen0_prog0
+2025-05-29 16:39:08,745 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:12,465 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen1_child0 (Generation: 1) to in-memory database.
+2025-05-29 16:39:12,465 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_0_gen0_prog0
+2025-05-29 16:39:12,466 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:14,936 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen1_child1 (Generation: 1) to in-memory database.
+2025-05-29 16:39:14,937 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_0_gen0_prog0
+2025-05-29 16:39:14,937 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:17,850 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen1_child2 (Generation: 1) to in-memory database.
+2025-05-29 16:39:17,850 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_0_gen0_prog0
+2025-05-29 16:39:17,850 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:20,191 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen1_child3 (Generation: 1) to in-memory database.
+2025-05-29 16:39:20,191 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_0_gen0_prog1
+2025-05-29 16:39:20,194 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:23,185 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen1_child4 (Generation: 1) to in-memory database.
+2025-05-29 16:39:23,186 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_0_gen0_prog1
+2025-05-29 16:39:23,186 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:25,672 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen1_child5 (Generation: 1) to in-memory database.
+2025-05-29 16:39:25,673 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_0_gen0_prog1
+2025-05-29 16:39:25,675 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:28,084 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen1_child6 (Generation: 1) to in-memory database.
+2025-05-29 16:39:28,084 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_0_gen0_prog1
+2025-05-29 16:39:28,084 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:30,654 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_0_gen1_child7 (Generation: 1) to in-memory database.
+2025-05-29 16:39:30,656 - selection_controller.agent - INFO - Starting survivor selection. Current pop: 4, Offspring pop: 8, Target pop size: 8
+2025-05-29 16:39:30,656 - selection_controller.agent - INFO - Selected 8 survivors. IDs: ['generate_3x3_MOLS_discovery_island_0_gen0_prog0', 'generate_3x3_MOLS_discovery_island_0_gen0_prog1', 'generate_3x3_MOLS_discovery_island_0_gen0_prog2', 'generate_3x3_MOLS_discovery_island_0_gen0_prog3', 'generate_3x3_MOLS_discovery_island_0_gen1_child0', 'generate_3x3_MOLS_discovery_island_0_gen1_child1', 'generate_3x3_MOLS_discovery_island_0_gen1_child2', 'generate_3x3_MOLS_discovery_island_0_gen1_child3']
+2025-05-29 16:39:30,656 - selection_controller.agent - INFO - Starting parent selection. Population size: 6, Number of parents to select: 3
+2025-05-29 16:39:30,657 - selection_controller.agent - INFO - Selected 2 elite parents: ['generate_3x3_MOLS_discovery_island_1_gen0_prog2', 'generate_3x3_MOLS_discovery_island_1_gen0_prog3']
+2025-05-29 16:39:30,657 - selection_controller.agent - INFO - Total parents selected: 3. IDs: ['generate_3x3_MOLS_discovery_island_1_gen0_prog2', 'generate_3x3_MOLS_discovery_island_1_gen0_prog3', 'generate_3x3_MOLS_discovery_island_1_gen0_prog4']
+2025-05-29 16:39:30,657 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_1_gen0_prog2
+2025-05-29 16:39:30,657 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:33,582 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen1_child0 (Generation: 1) to in-memory database.
+2025-05-29 16:39:33,582 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_1_gen0_prog2
+2025-05-29 16:39:33,582 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:36,003 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen1_child1 (Generation: 1) to in-memory database.
+2025-05-29 16:39:36,003 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_1_gen0_prog3
+2025-05-29 16:39:36,003 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:38,389 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen1_child2 (Generation: 1) to in-memory database.
+2025-05-29 16:39:38,390 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_1_gen0_prog3
+2025-05-29 16:39:38,390 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:40,735 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen1_child3 (Generation: 1) to in-memory database.
+2025-05-29 16:39:40,735 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_1_gen0_prog4
+2025-05-29 16:39:40,735 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:43,078 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen1_child4 (Generation: 1) to in-memory database.
+2025-05-29 16:39:43,079 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_1_gen0_prog4
+2025-05-29 16:39:43,079 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:45,448 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_1_gen1_child5 (Generation: 1) to in-memory database.
+2025-05-29 16:39:45,449 - selection_controller.agent - INFO - Starting survivor selection. Current pop: 6, Offspring pop: 6, Target pop size: 8
+2025-05-29 16:39:45,449 - selection_controller.agent - INFO - Selected 8 survivors. IDs: ['generate_3x3_MOLS_discovery_island_1_gen0_prog2', 'generate_3x3_MOLS_discovery_island_1_gen0_prog3', 'generate_3x3_MOLS_discovery_island_1_gen0_prog4', 'generate_3x3_MOLS_discovery_island_1_gen0_prog5', 'generate_3x3_MOLS_discovery_island_1_gen0_prog6', 'generate_3x3_MOLS_discovery_island_1_gen0_prog7', 'generate_3x3_MOLS_discovery_island_1_gen1_child0', 'generate_3x3_MOLS_discovery_island_1_gen1_child1']
+2025-05-29 16:39:45,449 - selection_controller.agent - INFO - Starting parent selection. Population size: 5, Number of parents to select: 2
+2025-05-29 16:39:45,449 - selection_controller.agent - INFO - Selected 2 elite parents: ['generate_3x3_MOLS_discovery_island_2_gen0_prog0', 'generate_3x3_MOLS_discovery_island_2_gen0_prog1']
+2025-05-29 16:39:45,449 - selection_controller.agent - INFO - Elitism filled all parent slots or no more parents needed.
+2025-05-29 16:39:45,449 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_2_gen0_prog0
+2025-05-29 16:39:45,449 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:48,144 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen1_child0 (Generation: 1) to in-memory database.
+2025-05-29 16:39:48,144 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_2_gen0_prog0
+2025-05-29 16:39:48,144 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:50,539 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen1_child1 (Generation: 1) to in-memory database.
+2025-05-29 16:39:50,540 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_2_gen0_prog0
+2025-05-29 16:39:50,540 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:53,120 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen1_child2 (Generation: 1) to in-memory database.
+2025-05-29 16:39:53,121 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_2_gen0_prog0
+2025-05-29 16:39:53,121 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:55,694 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen1_child3 (Generation: 1) to in-memory database.
+2025-05-29 16:39:55,694 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_2_gen0_prog1
+2025-05-29 16:39:55,694 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:39:57,929 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen1_child4 (Generation: 1) to in-memory database.
+2025-05-29 16:39:57,929 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_2_gen0_prog1
+2025-05-29 16:39:57,929 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:00,303 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen1_child5 (Generation: 1) to in-memory database.
+2025-05-29 16:40:00,303 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_2_gen0_prog1
+2025-05-29 16:40:00,303 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:02,794 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen1_child6 (Generation: 1) to in-memory database.
+2025-05-29 16:40:02,794 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_2_gen0_prog1
+2025-05-29 16:40:02,794 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:05,169 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_2_gen1_child7 (Generation: 1) to in-memory database.
+2025-05-29 16:40:05,170 - selection_controller.agent - INFO - Starting survivor selection. Current pop: 5, Offspring pop: 8, Target pop size: 8
+2025-05-29 16:40:05,170 - selection_controller.agent - INFO - Selected 8 survivors. IDs: ['generate_3x3_MOLS_discovery_island_2_gen0_prog0', 'generate_3x3_MOLS_discovery_island_2_gen0_prog1', 'generate_3x3_MOLS_discovery_island_2_gen0_prog2', 'generate_3x3_MOLS_discovery_island_2_gen0_prog3', 'generate_3x3_MOLS_discovery_island_2_gen0_prog4', 'generate_3x3_MOLS_discovery_island_2_gen1_child0', 'generate_3x3_MOLS_discovery_island_2_gen1_child1', 'generate_3x3_MOLS_discovery_island_2_gen1_child2']
+2025-05-29 16:40:05,170 - selection_controller.agent - INFO - Starting parent selection. Population size: 8, Number of parents to select: 4
+2025-05-29 16:40:05,170 - selection_controller.agent - INFO - Selected 2 elite parents: ['generate_3x3_MOLS_discovery_island_3_gen0_prog0', 'generate_3x3_MOLS_discovery_island_3_gen0_prog4']
+2025-05-29 16:40:05,170 - selection_controller.agent - INFO - Total parents selected: 4. IDs: ['generate_3x3_MOLS_discovery_island_3_gen0_prog0', 'generate_3x3_MOLS_discovery_island_3_gen0_prog4', 'generate_3x3_MOLS_discovery_island_3_gen0_prog2', 'generate_3x3_MOLS_discovery_island_3_gen0_prog2']
+2025-05-29 16:40:05,170 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_3_gen0_prog0
+2025-05-29 16:40:05,170 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:07,523 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen1_child0 (Generation: 1) to in-memory database.
+2025-05-29 16:40:07,523 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_3_gen0_prog0
+2025-05-29 16:40:07,523 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:09,858 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen1_child1 (Generation: 1) to in-memory database.
+2025-05-29 16:40:09,858 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_3_gen0_prog4
+2025-05-29 16:40:09,859 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:12,323 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen1_child2 (Generation: 1) to in-memory database.
+2025-05-29 16:40:12,323 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_3_gen0_prog4
+2025-05-29 16:40:12,323 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:14,553 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen1_child3 (Generation: 1) to in-memory database.
+2025-05-29 16:40:14,554 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_3_gen0_prog2
+2025-05-29 16:40:14,554 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:17,567 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen1_child4 (Generation: 1) to in-memory database.
+2025-05-29 16:40:17,567 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_3_gen0_prog2
+2025-05-29 16:40:17,567 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:19,872 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen1_child5 (Generation: 1) to in-memory database.
+2025-05-29 16:40:19,872 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_3_gen0_prog2
+2025-05-29 16:40:19,873 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:23,673 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen1_child6 (Generation: 1) to in-memory database.
+2025-05-29 16:40:23,673 - prompt_designer.agent - INFO - Designing mutation prompt for program: generate_3x3_MOLS_discovery_island_3_gen0_prog2
+2025-05-29 16:40:23,674 - code_generator.agent - INFO - Generating code using model: gemini-1.5-flash, output_format: diff
+2025-05-29 16:40:27,246 - database_agent.agent - INFO - Saving program: generate_3x3_MOLS_discovery_island_3_gen1_child7 (Generation: 1) to in-memory database.
+2025-05-29 16:40:27,247 - selection_controller.agent - INFO - Starting survivor selection. Current pop: 8, Offspring pop: 8, Target pop size: 8
+2025-05-29 16:40:27,247 - selection_controller.agent - INFO - Selected 8 survivors. IDs: ['generate_3x3_MOLS_discovery_island_3_gen0_prog0', 'generate_3x3_MOLS_discovery_island_3_gen0_prog4', 'generate_3x3_MOLS_discovery_island_3_gen0_prog1', 'generate_3x3_MOLS_discovery_island_3_gen0_prog5', 'generate_3x3_MOLS_discovery_island_3_gen0_prog7', 'generate_3x3_MOLS_discovery_island_3_gen0_prog2', 'generate_3x3_MOLS_discovery_island_3_gen0_prog3', 'generate_3x3_MOLS_discovery_island_3_gen0_prog6']
+2025-05-29 16:40:27,247 - task_manager.island_task_manager - INFO - Generation 1: Population=32, Avg Fitness=0.719, Max Fitness=1.000
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - MAP-Elites: Archive size=1, Coverage=0.005
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - Early termination at generation 1
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - Evolution completed in 78.52 seconds
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - === Final Evolution Statistics ===
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - Islands: 4
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - Total population: 32
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - Migration events: 0
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - MAP-Elites archive size: 1
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - Behavior space coverage: 0.005
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - Archive update rate: 0.031
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO - Best programs found: 5
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO -   #1: generate_3x3_MOLS_discovery_island_0_gen0_prog0, Fitness: {'score': 1.0, 'latin_score': 1.0, 'orthogonality_score': 1.0, 'latin_scores': [1.0, 1.0], 'orth_scores': [1.0], 'is_perfect_latin': True, 'runtime_ms': 0.09512901306152344, 'code_length': 18}
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO -   #2: generate_3x3_MOLS_discovery_island_0_gen0_prog1, Fitness: {'score': 1.0, 'latin_score': 1.0, 'orthogonality_score': 1.0, 'latin_scores': [1.0, 1.0], 'orth_scores': [1.0], 'is_perfect_latin': True, 'runtime_ms': 0.09512901306152344, 'code_length': 18}
+2025-05-29 16:40:27,252 - task_manager.island_task_manager - INFO -   #3: generate_3x3_MOLS_discovery_island_0_gen0_prog2, Fitness: {'score': 1.0, 'latin_score': 1.0, 'orthogonality_score': 1.0, 'latin_scores': [1.0, 1.0], 'orth_scores': [1.0], 'is_perfect_latin': True, 'runtime_ms': 0.09512901306152344, 'code_length': 18}
+2025-05-29 16:40:27,252 - __main__ - INFO - ================================================================================
+2025-05-29 16:40:27,253 - __main__ - INFO - Island-based evolutionary process completed successfully!
+2025-05-29 16:40:27,253 - __main__ - INFO - Best program(s) found: 5
+2025-05-29 16:40:27,253 - __main__ - INFO - ================================================================================
+2025-05-29 16:40:27,253 - __main__ - INFO - Final Best Program 1 ID: generate_3x3_MOLS_discovery_island_0_gen0_prog0
+2025-05-29 16:40:27,253 - __main__ - INFO - Final Best Program 1 Fitness: {'score': 1.0, 'latin_score': 1.0, 'orthogonality_score': 1.0, 'latin_scores': [1.0, 1.0], 'orth_scores': [1.0], 'is_perfect_latin': True, 'runtime_ms': 0.09512901306152344, 'code_length': 18}
+2025-05-29 16:40:27,253 - __main__ - INFO - Final Best Program 1 Generation: 0
+2025-05-29 16:40:27,253 - __main__ - INFO - Final Best Program 1 Code:
+def generate_MOLS_3():
+    """
+    Discover an algorithm to generate two 3x3 mutually orthogonal Latin squares. A Latin square is a grid where each row and column contains each symbol exactly once. Two Latin squares are orthogonal if, when superimposed, each ordered pair occurs exactly once. Your function should return a list of two 3x3 nested lists with values [0,1,2]. Explore algorithmic approaches: constraint-based methods, systematic construction, or mathematical transformations.
+    """
+    
+    # EVOLVE-BLOCK-START
+    # Generate first 3x3 latin square
+    square1 = [[0, 1, 2], [1, 2, 0], [2, 0, 1]]
+    
+    # Generate second 3x3 latin square  
+    square2 = [[0, 1, 2], [2, 0, 1], [1, 2, 0]]
+    
+    # Return both squares as MOLS
+    result = [square1, square2]
+    # EVOLVE-BLOCK-END
+    
+    return result
+
+2025-05-29 16:40:27,253 - __main__ - INFO - ------------------------------------------------------------
+2025-05-29 16:40:27,253 - __main__ - INFO - Executing Best Program 1:
+2025-05-29 16:40:27,254 - __main__ - INFO - Final Best Program 2 ID: generate_3x3_MOLS_discovery_island_0_gen0_prog1
+2025-05-29 16:40:27,254 - __main__ - INFO - Final Best Program 2 Fitness: {'score': 1.0, 'latin_score': 1.0, 'orthogonality_score': 1.0, 'latin_scores': [1.0, 1.0], 'orth_scores': [1.0], 'is_perfect_latin': True, 'runtime_ms': 0.09512901306152344, 'code_length': 18}
+2025-05-29 16:40:27,254 - __main__ - INFO - Final Best Program 2 Generation: 0
+2025-05-29 16:40:27,254 - __main__ - INFO - Final Best Program 2 Code:
+def generate_MOLS_3():
+    """
+    Discover an algorithm to generate two 3x3 mutually orthogonal Latin squares. A Latin square is a grid where each row and column contains each symbol exactly once. Two Latin squares are orthogonal if, when superimposed, each ordered pair occurs exactly once. Your function should return a list of two 3x3 nested lists with values [0,1,2]. Explore algorithmic approaches: constraint-based methods, systematic construction, or mathematical transformations.
+    """
+    
+    # EVOLVE-BLOCK-START
+    # Generate first 3x3 latin square
+    square1 = [[0, 1, 2], [1, 2, 0], [2, 0, 1]]
+    
+    # Generate second 3x3 latin square  
+    square2 = [[0, 1, 2], [2, 0, 1], [1, 2, 0]]
+    
+    # Return both squares as MOLS
+    result = [square1, square2]
+    # EVOLVE-BLOCK-END
+    
+    return result
+
+2025-05-29 16:40:27,254 - __main__ - INFO - ------------------------------------------------------------
+2025-05-29 16:40:27,254 - __main__ - INFO - Executing Best Program 2:
+2025-05-29 16:40:27,254 - __main__ - INFO - Final Best Program 3 ID: generate_3x3_MOLS_discovery_island_0_gen0_prog2
+2025-05-29 16:40:27,254 - __main__ - INFO - Final Best Program 3 Fitness: {'score': 1.0, 'latin_score': 1.0, 'orthogonality_score': 1.0, 'latin_scores': [1.0, 1.0], 'orth_scores': [1.0], 'is_perfect_latin': True, 'runtime_ms': 0.09512901306152344, 'code_length': 18}
+2025-05-29 16:40:27,254 - __main__ - INFO - Final Best Program 3 Generation: 0
+2025-05-29 16:40:27,255 - __main__ - INFO - Final Best Program 3 Code:
+def generate_MOLS_3():
+    """
+    Discover an algorithm to generate two 3x3 mutually orthogonal Latin squares. A Latin square is a grid where each row and column contains each symbol exactly once. Two Latin squares are orthogonal if, when superimposed, each ordered pair occurs exactly once. Your function should return a list of two 3x3 nested lists with values [0,1,2]. Explore algorithmic approaches: constraint-based methods, systematic construction, or mathematical transformations.
+    """
+    
+    # EVOLVE-BLOCK-START
+    # Generate first 3x3 latin square
+    square1 = [[0, 1, 2], [1, 2, 0], [2, 0, 1]]
+    
+    # Generate second 3x3 latin square  
+    square2 = [[0, 1, 2], [2, 0, 1], [1, 2, 0]]
+    
+    # Return both squares as MOLS
+    result = [square1, square2]
+    # EVOLVE-BLOCK-END
+    
+    return result
+
+2025-05-29 16:40:27,255 - __main__ - INFO - ------------------------------------------------------------
+2025-05-29 16:40:27,255 - __main__ - INFO - Executing Best Program 3:
+2025-05-29 16:40:27,255 - __main__ - INFO - Final Best Program 4 ID: generate_3x3_MOLS_discovery_island_0_gen0_prog3
+2025-05-29 16:40:27,255 - __main__ - INFO - Final Best Program 4 Fitness: {'score': 1.0, 'latin_score': 1.0, 'orthogonality_score': 1.0, 'latin_scores': [1.0, 1.0], 'orth_scores': [1.0], 'is_perfect_latin': True, 'runtime_ms': 0.09512901306152344, 'code_length': 18}
+2025-05-29 16:40:27,255 - __main__ - INFO - Final Best Program 4 Generation: 0
+2025-05-29 16:40:27,255 - __main__ - INFO - Final Best Program 4 Code:
+def generate_MOLS_3():
+    """
+    Discover an algorithm to generate two 3x3 mutually orthogonal Latin squares. A Latin square is a grid where each row and column contains each symbol exactly once. Two Latin squares are orthogonal if, when superimposed, each ordered pair occurs exactly once. Your function should return a list of two 3x3 nested lists with values [0,1,2]. Explore algorithmic approaches: constraint-based methods, systematic construction, or mathematical transformations.
+    """
+    
+    # EVOLVE-BLOCK-START
+    # Generate first 3x3 latin square
+    square1 = [[0, 1, 2], [1, 2, 0], [2, 0, 1]]
+    
+    # Generate second 3x3 latin square  
+    square2 = [[0, 1, 2], [2, 0, 1], [1, 2, 0]]
+    
+    # Return both squares as MOLS
+    result = [square1, square2]
+    # EVOLVE-BLOCK-END
+    
+    return result
+
+2025-05-29 16:40:27,255 - __main__ - INFO - ------------------------------------------------------------
+2025-05-29 16:40:27,255 - __main__ - INFO - Executing Best Program 4:
+2025-05-29 16:40:27,255 - __main__ - INFO - Final Best Program 5 ID: generate_3x3_MOLS_discovery_island_1_gen0_prog2
+2025-05-29 16:40:27,255 - __main__ - INFO - Final Best Program 5 Fitness: {'score': 1.0, 'latin_score': 1.0, 'orthogonality_score': 1.0, 'latin_scores': [1.0, 1.0], 'orth_scores': [1.0], 'is_perfect_latin': True, 'runtime_ms': 0.09512901306152344, 'code_length': 18}
+2025-05-29 16:40:27,255 - __main__ - INFO - Final Best Program 5 Generation: 0
+2025-05-29 16:40:27,255 - __main__ - INFO - Final Best Program 5 Code:
+def generate_MOLS_3():
+    """
+    Discover an algorithm to generate two 3x3 mutually orthogonal Latin squares. A Latin square is a grid where each row and column contains each symbol exactly once. Two Latin squares are orthogonal if, when superimposed, each ordered pair occurs exactly once. Your function should return a list of two 3x3 nested lists with values [0,1,2]. Explore algorithmic approaches: constraint-based methods, systematic construction, or mathematical transformations.
+    """
+    
+    # EVOLVE-BLOCK-START
+    # Generate first 3x3 latin square
+    square1 = [[0, 1, 2], [1, 2, 0], [2, 0, 1]]
+    
+    # Generate second 3x3 latin square  
+    square2 = [[0, 1, 2], [2, 0, 1], [1, 2, 0]]
+    
+    # Return both squares as MOLS
+    result = [square1, square2]
+    # EVOLVE-BLOCK-END
+    
+    return result
+
+2025-05-29 16:40:27,255 - __main__ - INFO - ------------------------------------------------------------
+2025-05-29 16:40:27,255 - __main__ - INFO - Executing Best Program 5:
+2025-05-29 16:40:27,256 - __main__ - INFO - Island Model Final Statistics:
+2025-05-29 16:40:27,256 - __main__ - INFO -   Total Islands: 4
+2025-05-29 16:40:27,256 - __main__ - INFO -   Total Population: 32
+2025-05-29 16:40:27,256 - __main__ - INFO -   Migration Events: 0
+2025-05-29 16:40:27,256 - __main__ - INFO -   island_0: Strategy=exploitation, Pop=8, Best Fitness=1.000
+2025-05-29 16:40:27,256 - __main__ - INFO -   island_1: Strategy=exploration, Pop=8, Best Fitness=1.000
+2025-05-29 16:40:27,256 - __main__ - INFO -   island_2: Strategy=balanced, Pop=8, Best Fitness=1.000
+2025-05-29 16:40:27,256 - __main__ - INFO -   island_3: Strategy=random, Pop=8, Best Fitness=1.000
+2025-05-29 16:40:27,256 - __main__ - INFO - MAP-Elites Final Statistics:
+2025-05-29 16:40:27,256 - __main__ - INFO -   Archive Size: 1
+2025-05-29 16:40:27,256 - __main__ - INFO -   Behavior Space Coverage: 0.50%
+2025-05-29 16:40:27,256 - __main__ - INFO -   Archive Update Rate: 3.12%
+2025-05-29 16:40:27,256 - __main__ - INFO -   Total Evaluations: 32
+2025-05-29 16:40:27,256 - __main__ - INFO - ================================================================================
+2025-05-29 16:40:27,256 - __main__ - INFO - OpenAlpha_Evolve Island Model run finished.
+2025-05-29 16:40:27,256 - __main__ - INFO - ================================================================================

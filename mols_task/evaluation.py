@@ -1,14 +1,12 @@
-from mols_task.reference_output import EXAMPLE_OUTPUT
-
 def evaluate(squares) -> dict[str, float]:
     def is_perfect_latin(square):
         """완벽한 Latin square인지 검사"""
         for row in square:
-            if len(set(row)) != 10 or not all(0 <= x <= 9 for x in row):
+            if len(set(row)) != 3 or not all(0 <= x <= 2 for x in row):
                 return False
-        for j in range(10):
-            col = [square[i][j] for i in range(10)]
-            if len(set(col)) != 10 or not all(0 <= x <= 9 for x in col):
+        for j in range(3):
+            col = [square[i][j] for i in range(3)]
+            if len(set(col)) != 3 or not all(0 <= x <= 2 for x in col):
                 return False
         return True
 
@@ -28,21 +26,21 @@ def evaluate(squares) -> dict[str, float]:
         
         # 행 평가
         for row in square:
-            if not all(0 <= x <= 9 for x in row):
+            if not all(0 <= x <= 2 for x in row):
                 range_penalty += 0.1
-            unique_ratio = len(set(row)) / 10
+            unique_ratio = len(set(row)) / 3
             row_scores.append(unique_ratio)
         
         # 열 평가
-        for j in range(10):
-            col = [square[i][j] for i in range(10)]
-            if not all(0 <= x <= 9 for x in col):
+        for j in range(3):
+            col = [square[i][j] for i in range(3)]
+            if not all(0 <= x <= 2 for x in col):
                 range_penalty += 0.1
-            unique_ratio = len(set(col)) / 10
+            unique_ratio = len(set(col)) / 3
             col_scores.append(unique_ratio)
         
         # 기본 점수 계산
-        base_score = (sum(row_scores) + sum(col_scores)) / 20
+        base_score = (sum(row_scores) + sum(col_scores)) / 6  # 3 rows + 3 cols = 6
         
         # 완벽도에 따른 보너스 점수
         if base_score > 0.95:  # 95% 이상 정확도
@@ -61,10 +59,10 @@ def evaluate(squares) -> dict[str, float]:
         - 완벽한 직교성에 보너스 부여
         """
         seen = {}  # 각 쌍의 출현 횟수를 기록
-        total_pairs = 100  # 10x10
+        total_pairs = 9  # 3x3
         
-        for i in range(10):
-            for j in range(10):
+        for i in range(3):
+            for j in range(3):
                 pair = (a[i][j], b[i][j])
                 seen[pair] = seen.get(pair, 0) + 1
         
@@ -76,7 +74,7 @@ def evaluate(squares) -> dict[str, float]:
         
         # 분포도 보너스: 중복이 고르게 분포되어 있으면 약간의 보너스
         max_duplicates = max(seen.values())
-        if max_duplicates <= 2:  # 최대 중복이 2회 이하면
+        if max_duplicates <= 1:  # 3x3에서는 중복이 없어야 함
             distribution_bonus = 0.05
         else:
             distribution_bonus = 0
@@ -84,46 +82,13 @@ def evaluate(squares) -> dict[str, float]:
         # 최종 점수
         return min(1.0, base_score + distribution_bonus)
 
-    # 각 스퀘어의 Latin 점수 계산
+    # 각 스퀘어의 Latin 점수 계산 (2개만)
     latin_scores = [latin_score(sq) for sq in squares]
-    latin_total = sum(latin_scores) / 3
+    latin_total = sum(latin_scores) / 2  # 2개 square의 평균
 
-    # 직교성 점수 계산
-    orth_scores = [
-        orth_score(squares[0], squares[1]),
-        orth_score(squares[1], squares[2]),
-        orth_score(squares[2], squares[0])
-    ]
-    orth_total = sum(orth_scores) / 3
-
-    # === 복사 방지: 예시 output과 완전 일치하면 무조건 탈락
-    if squares == EXAMPLE_OUTPUT:
-        return {
-            "score": 0.0,
-            "latin_score": 0.0,
-            "orthogonality_score": 0.0
-        }
-
-    # === 구조 유사성 감점 ===
-    def is_structure_similar(sq1, sq2):
-        for i in range(10):
-            if sq1[i] == sq2[i]:
-                return True  # row-wise identical
-        for j in range(10):
-            col1 = [sq1[i][j] for i in range(10)]
-            col2 = [sq2[i][j] for i in range(10)]
-            if col1 == col2:
-                return True  # col-wise identical
-        return False
-
-    similarity_penalty = 0
-    for ref_sq in EXAMPLE_OUTPUT:
-        for test_sq in squares:
-            if is_structure_similar(test_sq, ref_sq):
-                similarity_penalty += 0.15  # per matched structure
-
-    # Clamped between 0 and 1
-    similarity_penalty = min(0.6, similarity_penalty)
+    # 직교성 점수 계산 (1개 쌍만)
+    orth_scores = [orth_score(squares[0], squares[1])]
+    orth_total = orth_scores[0]  # 1개 쌍만 있음
 
     # 완벽한 Latin square 여부 확인
     all_perfect_latin = all(is_perfect_latin(sq) for sq in squares)
@@ -143,19 +108,15 @@ def evaluate(squares) -> dict[str, float]:
             orth_weight = 0.2
             latin_weight = 0.8
 
-    # 최종 점수 계산
-    raw_score = latin_weight * latin_total + orth_weight * orth_total
-    
-    # Similarity penalty 적용
-    similarity_penalty = min(0.3, similarity_penalty * 0.5)
-    penalized_score = max(0.0, raw_score * (1 - similarity_penalty))
+    # 최종 점수 계산 (reference penalty 완전 제거)
+    final_score = latin_weight * latin_total + orth_weight * orth_total
 
     # 완벽한 Latin square가 아닌 경우 점수 감소
     if not all_perfect_latin:
-        penalized_score *= 0.8  # 20% 감점
+        final_score *= 0.8  # 20% 감점
 
     return {
-        "score": penalized_score,
+        "score": final_score,
         "latin_score": latin_total,
         "orthogonality_score": orth_total,
         "latin_scores": latin_scores,

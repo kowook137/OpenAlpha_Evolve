@@ -101,7 +101,7 @@ class EvaluatorAgent(EvaluatorAgentInterface, BaseAgent):
             # 실행할 코드 작성
             f.write(code + '\n')
             f.write('import json\n')
-            f.write('result = generate_MOLS_10()\n')
+            f.write('result = generate_MOLS_3()\n')
             f.write('print(json.dumps(result))\n')
             temp_path = f.name
 

@@ -1,14 +1,94 @@
 import os
+import asyncio
+import time
+import traceback
 from mols_task.evaluation import evaluate
+from core.interfaces import EvaluatorAgentInterface, Program, TaskDefinition, BaseAgent
+from typing import Optional, Dict, Any
 
-class EvaluatorAgent:
-    def __init__(self):
+class EvaluatorAgent(EvaluatorAgentInterface, BaseAgent):
+    def __init__(self, task_definition: Optional[TaskDefinition] = None):
+        super().__init__()
+        self.task_definition = task_definition
         self.best_program = None
         self.best_fitness = None
         self.best_squares = None
+        self._cache = {}  # Simple in-memory cache
+
+    async def execute(self, program: Program, task: TaskDefinition) -> Program:
+        return await self.evaluate_program(program, task)
+
+    async def evaluate_program(self, program: Program, task: TaskDefinition) -> Program:
+        """Asynchronous program evaluation"""
+        # Check cache
+        cache_key = f"{program.code}_{task.id}"
+        if cache_key in self._cache:
+            cached_result = self._cache[cache_key]
+            program.status = cached_result["status"]
+            program.errors = cached_result["errors"]
+            program.fitness_scores = cached_result["fitness_scores"]
+            return program
+
+        program.status = "evaluating"
+        program.errors = []
+        program.fitness_scores = {}
+
+        try:
+            # Safe environment code execution
+            start_time = time.time()
+            squares = await self._execute_safely(program.code)
+            execution_time = (time.time() - start_time) * 1000  # ms conversion
+
+            # Evaluation
+            fitness = evaluate(squares)
+            
+            # Update best performance
+            if self.best_fitness is None or fitness['score'] > self.best_fitness['score']:
+                self.best_fitness = fitness
+                self.best_program = program.code
+                self.best_squares = squares
+
+            # Record results
+            program.fitness_scores = {
+                **fitness,  # Existing scores
+                "runtime_ms": execution_time,
+                "code_length": len(program.code.split('\n'))
+            }
+            program.status = "evaluated"
+
+            # Cache the result
+            self._cache[cache_key] = {
+                "status": program.status,
+                "errors": program.errors,
+                "fitness_scores": program.fitness_scores
+            }
+
+        except Exception as e:
+            program.status = "failed_evaluation"
+            program.errors.append(str(e))
+            program.errors.append(traceback.format_exc())
+            program.fitness_scores = {
+                'score': 0.0,
+                'latin_score': 0.0,
+                'orthogonality_score': 0.0,
+                'error': str(e)
+            }
+
+        return program
+
+    async def _execute_safely(self, code: str):
+        """Safe environment code execution"""
+        try:
+            # Program execution
+            namespace = {}
+            exec(code, namespace)
+            squares = namespace['generate_MOLS_3']()
+            return squares
+        except Exception as e:
+            raise RuntimeError(f"Code execution failed: {str(e)}")
 
     def print_matrix(self, matrix, name="Matrix"):
-        """행렬을 보기 좋게 출력하는 함수"""
+        """Function to print matrix in a readable format"""
         print(f"\n{name}:")
         print("-" * (4 * len(matrix) + 1))
         for row in matrix:
@@ -19,12 +99,12 @@ class EvaluatorAgent:
         print("-" * (4 * len(matrix) + 1))
 
     def print_best_result(self):
-        """최적의 프로그램과 결과를 출력"""
+        """Print the best program and results"""
         if self.best_program and self.best_squares:
-            print("\n=== Alpha Evolve가 찾은 최적의 프로그램 ===")
+            print("\n=== Best Program Found by Alpha Evolve ===")
             print(self.best_program)
             
-            print("\n=== 생성된 MOLS ===")
+            print("\n=== Generated MOLS ===")
             for i, square in enumerate(self.best_squares, 1):
                 self.print_matrix(square, f"Latin Square {i}")
             
@@ -40,31 +120,4 @@ class EvaluatorAgent:
                             if pair in pairs:
                                 duplicates += 1
                             pairs.add(pair)
-                    print(f"Squares {i+1} and {j+1}: {duplicates} duplicate pairs")
-
-    def evaluate_program(self, program_code, program_id):
-        try:
-            # 프로그램 실행
-            namespace = {}
-            exec(program_code, namespace)
-            squares = namespace['generate_MOLS_10']()
-            
-            # 평가 수행
-            fitness = evaluate(squares)
-            
-            # 최고 성능 갱신 시 저장
-            if self.best_fitness is None or fitness['score'] > self.best_fitness['score']:
-                self.best_fitness = fitness
-                self.best_program = program_code
-                self.best_squares = squares
-            
-            return fitness
-            
-        except Exception as e:
-            print(f"Error evaluating program {program_id}: {str(e)}")
-            return {
-                'score': 0,
-                'latin_score': 0,
-                'orthogonality_score': 0,
-                'error': str(e)
-            } 
+                    print(f"Squares {i+1} and {j+1}: {duplicates} duplicate pairs") 

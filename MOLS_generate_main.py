@@ -12,7 +12,7 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from task_manager.gpu_island_task_manager import GPUIslandTaskManager
+# CPU 기반 Task Manager는 항상 import
 from task_manager.island_task_manager import IslandTaskManager
 from core.interfaces import TaskDefinition, Program
 from config import settings
@@ -23,7 +23,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     handlers=[
         logging.StreamHandler(sys.stdout),
-        logging.FileHandler(settings.LOG_FILE, mode="a")        # logging 을 위한 설정 필요함.
+        logging.FileHandler(settings.LOG_FILE, mode="a")        # Added logging configuration
     ]
 )
 logger = logging.getLogger(__name__)
@@ -62,142 +62,23 @@ async def main():
     logger.info(f"LLM Models: Pro={settings.GEMINI_PRO_MODEL_NAME}, Flash={settings.GEMINI_FLASH_MODEL_NAME}, Eval={settings.GEMINI_EVALUATION_MODEL}")
 
     task = TaskDefinition(
-        id="generate_10x10_MOLS_island_model",
+        id="generate_3x3_MOLS_discovery",
+        function_name_to_evolve="generate_MOLS_3",
         description=(
-            "Implement a function `generate_MOLS_10()` → List[List[List[int]]]."
-            "It should return 3 Latin squares of size 10×10, each as a 2D list of integers 0–9."
-            "Each square must have no repeated numbers in any row or column."
-            "Two squares A and B are orthogonal if all (A[i][j], B[i][j]) pairs are unique across all positions."
-            "Return three Latin squares that are as mutually orthogonal as possible — i.e., all pairs (A,B), (A,C), and (B,C) should satisfy this condition."
-            "Partial credit is given for:"
-            "- Nearly valid Latin squares (few duplicate values in rows/columns),"
-            "- Nearly orthogonal square pairs (few repeated pairs)."
-            "Return format: a list of 3 elements, each a 10×10 list of integers from 0 to 9."
+            "Discover an algorithm to generate two 3x3 mutually orthogonal Latin squares. "
+            "A Latin square is a grid where each row and column contains each symbol exactly once. "
+            "Two Latin squares are orthogonal if, when superimposed, each ordered pair occurs exactly once. "
+            "Your function should return a list of two 3x3 nested lists with values [0,1,2]. "
+            "Explore algorithmic approaches: constraint-based methods, systematic construction, or mathematical transformations."
         ),
-        function_name_to_evolve="generate_MOLS_10",
         input_output_examples = [
             {
                 "input": [],
                 "output": [
-                    [   # Latin Square 1
-                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                        [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
-                        [2, 3, 4, 5, 6, 7, 8, 9, 0, 1],
-                        [3, 4, 5, 6, 7, 8, 9, 0, 1, 2],
-                        [4, 5, 6, 7, 8, 9, 0, 1, 2, 3],
-                        [5, 6, 7, 8, 9, 0, 1, 2, 3, 4],
-                        [6, 7, 8, 9, 0, 1, 2, 3, 4, 5],
-                        [7, 8, 9, 0, 1, 2, 3, 4, 5, 6],
-                        [8, 9, 0, 1, 2, 3, 4, 5, 6, 7],
-                        [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
-                    ],
-                    [   # Latin Square 2
-                        [0, 2, 4, 6, 8, 1, 3, 5, 7, 9],
-                        [1, 3, 5, 7, 9, 2, 4, 6, 8, 0],
-                        [2, 4, 6, 8, 0, 3, 5, 7, 9, 1],
-                        [3, 5, 7, 9, 1, 4, 6, 8, 0, 2],
-                        [4, 6, 8, 0, 2, 5, 7, 9, 1, 3],
-                        [5, 7, 9, 1, 3, 6, 8, 0, 2, 4],
-                        [6, 8, 0, 2, 4, 7, 9, 1, 3, 5],
-                        [7, 9, 1, 3, 5, 8, 0, 2, 4, 6],
-                        [8, 0, 2, 4, 6, 9, 1, 3, 5, 7],
-                        [9, 1, 3, 5, 7, 0, 2, 4, 6, 8]
-                    ],
-                    [  # Latin Square 3
-                        [9, 8, 7, 6, 5, 4, 3, 2, 1, 0],
-                        [8, 7, 6, 5, 4, 3, 2, 1, 0, 9],
-                        [7, 6, 5, 4, 3, 2, 1, 0, 9, 8],
-                        [6, 5, 4, 3, 2, 1, 0, 9, 8, 7],
-                        [5, 4, 3, 2, 1, 0, 9, 8, 7, 6],
-                        [4, 3, 2, 1, 0, 9, 8, 7, 6, 5],
-                        [3, 2, 1, 0, 9, 8, 7, 6, 5, 4],
-                        [2, 1, 0, 9, 8, 7, 6, 5, 4, 3],
-                        [1, 0, 9, 8, 7, 6, 5, 4, 3, 2],
-                        [0, 9, 8, 7, 6, 5, 4, 3, 2, 1]
-                    ]
-                ]
-            },
-            {
-                "input": [],
-                "output": [
-                      [  # square 1
-                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                        [2, 3, 4, 5, 6, 7, 8, 9, 0, 1],
-                        [4, 5, 6, 7, 8, 9, 0, 1, 2, 3],
-                        [6, 7, 8, 9, 0, 1, 2, 3, 4, 5],
-                        [8, 9, 0, 1, 2, 3, 4, 5, 6, 7],
-                        [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
-                        [3, 4, 5, 6, 7, 8, 9, 0, 1, 2],
-                        [5, 6, 7, 8, 9, 0, 1, 2, 3, 4],
-                        [7, 8, 9, 0, 1, 2, 3, 4, 5, 6],
-                        [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
-                    ],
-                    [  # square 2
-                        [0, 2, 4, 6, 8, 1, 3, 5, 7, 9],
-                        [1, 3, 5, 7, 9, 2, 4, 6, 8, 0],
-                        [2, 4, 6, 8, 0, 3, 5, 7, 9, 1],
-                        [3, 5, 7, 9, 1, 4, 6, 8, 0, 2],
-                        [4, 6, 8, 0, 2, 5, 7, 9, 1, 3],
-                        [5, 7, 9, 1, 3, 6, 8, 0, 2, 4],
-                        [6, 8, 0, 2, 4, 7, 9, 1, 3, 5],
-                        [7, 9, 1, 3, 5, 8, 0, 2, 4, 6],
-                        [8, 0, 2, 4, 6, 9, 1, 3, 5, 7],
-                        [9, 1, 3, 5, 7, 0, 2, 4, 6, 8]
-                    ],
-                    [  # square 3 (random but Latin)
-                        [0, 4, 8, 2, 6, 1, 5, 9, 3, 7],
-                        [1, 5, 9, 3, 7, 2, 6, 0, 4, 8],
-                        [2, 6, 0, 4, 8, 3, 7, 1, 5, 9],
-                        [3, 7, 1, 5, 9, 4, 8 ,2 ,6 ,0],
-                        [4, 8, 2, 6, 0, 5, 9, 3, 7, 1],
-                        [5, 9, 3, 7, 1, 6, 0, 4, 8, 2],
-                        [6, 0, 4, 8, 2, 7, 1, 5, 9, 3],
-                        [7, 1, 5, 9, 3, 8, 2, 6, 0, 4],
-                        [8, 2, 6, 0, 4, 9, 3, 7, 1, 5],
-                        [9, 3, 7, 1, 5, 0, 4, 8, 2, 6]
-                    ]
-                ]
-            },
-            {
-                "input":[],
-                "output": [
-                     [  # square 1
-                        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
-                        [1, 2, 3, 4, 5, 6, 7, 8, 9, 0],
-                        [2, 3, 4, 5, 6, 7, 8, 9, 0, 1],
-                        [3, 4, 5, 6, 7, 8, 9, 0, 1, 2],
-                        [4, 5, 6, 7, 8, 9, 0, 1, 2, 3],
-                        [5, 6, 7, 8, 9, 0, 1, 2, 3, 4],
-                        [6, 7, 8, 9, 0, 1, 2, 3, 4, 5],
-                        [7, 8, 9, 0, 1, 2, 3, 4, 5, 6],
-                        [8, 9, 0, 1, 2, 3, 4, 5, 6, 7],
-                        [9, 0, 1, 2, 3, 4, 5, 6, 7, 8]
-                    ],
-                    [  # square 2 (same as square1 rotated → very low orthogonality)
-                        [0, 9, 8, 7, 6, 5, 4, 3, 2, 1],
-                        [1, 0, 9, 8, 7, 6, 5, 4, 3, 2],
-                        [2, 1, 0, 9, 8, 7, 6, 5, 4, 3],
-                        [3, 2, 1, 0, 9, 8, 7, 6, 5, 4],
-                        [4, 3, 2, 1, 0, 9, 8, 7, 6, 5],
-                        [5, 4, 3, 2, 1, 0, 9, 8, 7, 6],
-                        [6, 5, 4, 3, 2, 1, 0, 9, 8, 7],
-                        [7, 6, 5, 4, 3, 2, 1, 0, 9, 8],
-                        [8, 7, 6, 5, 4, 3, 2, 1, 0, 9],
-                        [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-                    ],
-                    [  # square 3 (partial noise but Latin)
-                        [0, 1, 3, 2, 4, 5, 7, 6, 9, 8],
-                        [1, 2, 4, 3, 5, 6, 8, 7, 0, 9],
-                        [2, 3, 5, 4, 6, 7, 9, 8, 1, 0],
-                        [3, 4, 6, 5, 7, 8, 0, 9, 2, 1],
-                        [4, 5, 7, 6, 8, 9, 1, 0, 3, 2],
-                        [5, 6, 8, 7, 9, 0, 2, 1, 4, 3],
-                        [6, 7, 9, 8, 0, 1, 3, 2, 5, 4],
-                        [7, 8, 0, 9, 1, 2, 4, 3, 6, 5],
-                        [8, 9, 1, 0, 2, 3, 5, 4, 7, 6],
-                        [9, 0, 2, 1, 3, 4, 6, 5, 8, 7]
-                    ]
-                ]
+                    "[[0, 1, 2], [1, 2, 0], [2, 0, 1]]",
+                    "[[0, 1, 2], [2, 0, 1], [1, 2, 0]]"
+                ],
+                "explanation": "Two 3x3 Latin squares where each row and column contains {0,1,2} exactly once, and when overlaid, all 9 coordinate pairs are unique."
             }
         ],
         allowed_imports=["random", "itertools", "numpy"],
@@ -206,23 +87,32 @@ async def main():
     # Initialize MOLS-specific evaluator
     evaluator = EvaluatorAgent()
     
-    # GPU 가속 사용 여부 확인
+    # Check if GPU acceleration is enabled
     use_gpu = getattr(settings, 'ENABLE_GPU_ACCELERATION', False)
     
     if use_gpu:
-        # GPU 설정 로깅
+        # Import GPU modules only when GPU is enabled (to avoid torch dependencies)
+        try:
+            from task_manager.gpu_island_task_manager import GPUIslandTaskManager
+        except ImportError as e:
+            logger.error(f"GPU acceleration enabled but required packages not installed: {e}")
+            logger.info("Falling back to CPU mode...")
+            use_gpu = False
+    
+    if use_gpu:
+        # Log GPU configuration
         gpu_config = settings.get_gpu_config()
         logger.info("GPU Acceleration Configuration:")
         for key, value in gpu_config.items():
             logger.info(f"  {key}: {value}")
         
-        # GPU MAP-Elites 설정 로깅
+        # Log GPU MAP-Elites configuration
         gpu_map_elites_config = settings.get_gpu_map_elites_config()
         logger.info("GPU MAP-Elites Configuration:")
         for key, value in gpu_map_elites_config.items():
             logger.info(f"  {key}: {value}")
         
-        # GPU Task Manager 설정
+        # GPU Task Manager configuration
         task_manager_config = {
             "max_generations": settings.GENERATIONS,
             "population_size": gpu_config["num_islands"] * gpu_config["population_per_island"],
@@ -253,12 +143,12 @@ async def main():
             }
         }
         
-        # GPU Island Task Manager 초기화
+        # Initialize GPU Island Task Manager
         task_manager = GPUIslandTaskManager(task_manager_config)
         logger.info("Initialized GPU-accelerated Island Task Manager")
         
     else:
-        # CPU 기반 Island Task Manager 초기화 (기존 방식)
+        # Initialize CPU-based Island Task Manager (existing method)
         task_manager = IslandTaskManager(
             task_definition=task,
             evaluator=evaluator
@@ -268,21 +158,21 @@ async def main():
     logger.info("Starting island-based evolution for MOLS generation...")
     
     if use_gpu:
-        # GPU 버전은 다른 실행 방식 사용
+        # GPU version uses different execution method
         from code_generator.agent import CodeGeneratorAgent
         from prompt_designer.agent import PromptDesignerAgent
         
         generator = CodeGeneratorAgent()
         prompt_designer = PromptDesignerAgent(task)
         
-        # 초기 프로그램 생성
+        # Generate initial programs
         initial_programs = []
         for i in range(task_manager_config["population_size"]):
             try:
-                # 초기 프롬프트 생성
+                # Generate initial prompt
                 initial_prompt = prompt_designer.design_initial_prompt()
                 
-                # 코드 생성
+                # Generate code
                 generated_code = await generator.generate_code(initial_prompt)
                 
                 if generated_code:
@@ -297,11 +187,11 @@ async def main():
         
         logger.info(f"Generated {len(initial_programs)} initial programs for GPU evolution")
         
-        # GPU 진화 실행
+        # Execute GPU evolution
         evolution_results = await task_manager.run_evolution(task, initial_programs)
         best_programs = evolution_results.get("best_programs", [])
         
-        # GPU 성능 통계 로깅
+        # Log GPU performance statistics
         gpu_performance = evolution_results.get("gpu_performance", {})
         logger.info("GPU Performance Statistics:")
         for key, value in gpu_performance.items():
@@ -313,7 +203,7 @@ async def main():
                 logger.info(f"  {key}: {value}")
         
     else:
-        # CPU 버전 실행 (기존 방식)
+        # Execute CPU version (existing method)
         best_programs = await task_manager.execute()
 
     if best_programs:
@@ -335,31 +225,29 @@ async def main():
             try:
                 namespace = {}
                 exec(program.code, namespace)
-                squares = namespace['generate_MOLS_10']()
+                squares = namespace['generate_MOLS_3']()
                 
                 logger.info(f"Executing Best Program {i+1}:")
                 evaluator.print_matrix(squares[0], "Latin Square 1")
                 evaluator.print_matrix(squares[1], "Latin Square 2")
-                evaluator.print_matrix(squares[2], "Latin Square 3")
                 
                 print("\nOrthogonality Analysis:")
                 print("-" * 40)
                 total_duplicates = 0
-                for sq1 in range(len(squares)):
-                    for sq2 in range(sq1 + 1, len(squares)):
-                        pairs = set()
-                        duplicates = 0
-                        for r in range(len(squares[sq1])):
-                            for c in range(len(squares[sq1])):
-                                pair = (squares[sq1][r][c], squares[sq2][r][c])
-                                if pair in pairs:
-                                    duplicates += 1
-                                pairs.add(pair)
-                        total_duplicates += duplicates
-                        orthogonality_score = (100 - duplicates) / 100.0
-                        print(f"Squares {sq1+1} and {sq2+1}: {duplicates} duplicate pairs (Orthogonality: {orthogonality_score:.2%})")
+                # 3x3 MOLS has only 2 squares
+                pairs = set()
+                duplicates = 0
+                for r in range(len(squares[0])):
+                    for c in range(len(squares[0])):
+                        pair = (squares[0][r][c], squares[1][r][c])
+                        if pair in pairs:
+                            duplicates += 1
+                        pairs.add(pair)
+                total_duplicates = duplicates
+                orthogonality_score = (9 - duplicates) / 9.0  # 3x3 = 9 pairs total
+                print(f"Squares 1 and 2: {duplicates} duplicate pairs (Orthogonality: {orthogonality_score:.2%})")
                 
-                overall_orthogonality = max(0, (300 - total_duplicates) / 300.0)
+                overall_orthogonality = orthogonality_score
                 print(f"Overall Orthogonality Score: {overall_orthogonality:.2%}")
                 print("=" * 40)
                 
