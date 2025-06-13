@@ -62,23 +62,23 @@ async def main():
     logger.info(f"LLM Models: Pro={settings.GEMINI_PRO_MODEL_NAME}, Flash={settings.GEMINI_FLASH_MODEL_NAME}, Eval={settings.GEMINI_EVALUATION_MODEL}")
 
     task = TaskDefinition(
-        id="generate_3x3_MOLS_discovery",
-        function_name_to_evolve="generate_MOLS_3",
+        id="generate_4x4_MOLS_discovery",
+        function_name_to_evolve="generate_MOLS_n",
         description=(
-            "Discover an algorithm to generate two 3x3 mutually orthogonal Latin squares. "
-            "A Latin square is a grid where each row and column contains each symbol exactly once. "
+            "Discover an algorithm to generate two 4x4 mutually orthogonal Latin squares. "
+            "A Latin square is a 4x4 grid where each row and column contains each symbol (0,1,2,3) exactly once. "
             "Two Latin squares are orthogonal if, when superimposed, each ordered pair occurs exactly once. "
-            "Your function should return a list of two 3x3 nested lists with values [0,1,2]. "
+            "Your function should return a list of two 4x4 nested lists with values [0,1,2,3]. "
             "Explore algorithmic approaches: constraint-based methods, systematic construction, or mathematical transformations."
         ),
         input_output_examples = [
             {
                 "input": [],
                 "output": [
-                    "[[0, 1, 2], [1, 2, 0], [2, 0, 1]]",
-                    "[[0, 1, 2], [2, 0, 1], [1, 2, 0]]"
+                    "[[0, 1, 2, 3], [1, 2, 3, 0], [2, 3, 0, 1], [3, 0, 1, 2]]",
+                    "[[0, 2, 1, 3], [2, 0, 3, 1], [1, 3, 2, 0], [3, 1, 0, 2]]"
                 ],
-                "explanation": "Two 3x3 Latin squares where each row and column contains {0,1,2} exactly once, and when overlaid, all 9 coordinate pairs are unique."
+                "explanation": "Two 4x4 Latin squares where each row and column contains {0,1,2,3} exactly once, and when overlaid, all 16 coordinate pairs are unique."
             }
         ],
         allowed_imports=["random", "itertools", "numpy"],
@@ -225,7 +225,7 @@ async def main():
             try:
                 namespace = {}
                 exec(program.code, namespace)
-                squares = namespace['generate_MOLS_3']()
+                squares = namespace['generate_MOLS_n'](4)
                 
                 logger.info(f"Executing Best Program {i+1}:")
                 evaluator.print_matrix(squares[0], "Latin Square 1")
@@ -234,7 +234,6 @@ async def main():
                 print("\nOrthogonality Analysis:")
                 print("-" * 40)
                 total_duplicates = 0
-                # 3x3 MOLS has only 2 squares
                 pairs = set()
                 duplicates = 0
                 for r in range(len(squares[0])):
@@ -244,9 +243,8 @@ async def main():
                             duplicates += 1
                         pairs.add(pair)
                 total_duplicates = duplicates
-                orthogonality_score = (9 - duplicates) / 9.0  # 3x3 = 9 pairs total
+                orthogonality_score = (16 - duplicates) / 16.0  # 4x4 = 16 pairs total
                 print(f"Squares 1 and 2: {duplicates} duplicate pairs (Orthogonality: {orthogonality_score:.2%})")
-                
                 overall_orthogonality = orthogonality_score
                 print(f"Overall Orthogonality Score: {overall_orthogonality:.2%}")
                 print("=" * 40)

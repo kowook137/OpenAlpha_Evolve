@@ -87,12 +87,12 @@ def algorithm_config():
 # EVOLVE-BLOCK-END
 
 # EVOLVE-BLOCK-START
-def generate_MOLS_3() -> List[List[List[int]]]:
-    """Main MOLS generation algorithm combining all components"""
+def generate_MOLS_n(n: int = 4) -> List[List[List[int]]]:
+    """Main MOLS generation algorithm combining all components for n x n squares"""
     config = algorithm_config()
     
     # Step 1: Generate base square
-    base_square = base_square_generator(3)
+    base_square = base_square_generator(n)
     
     # Step 2: Create orthogonal partner
     partner_square = orthogonality_transformer(base_square, config['transformation_method'])
