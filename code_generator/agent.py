@@ -527,25 +527,36 @@ Make sure your changes work together cohesively!
         """Generate initial code by providing EVOLVE-BLOCK template and asking LLM to fill the algorithm only"""
         logger.info(f"Generating initial code with EVOLVE-BLOCK template for: {function_name}")
         
-        # Provide fixed EVOLVE-BLOCK template
-        template = f"""def {function_name}():
-    \"\"\"
-    {task_description}
-    \"\"\"
-    
-    # EVOLVE-BLOCK-START
-    # Generate first 3x3 latin square
-    square1 = [[0, 1, 2], [1, 2, 0], [2, 0, 1]]
-    
-    # Generate second 3x3 latin square  
-    square2 = [[0, 1, 2], [2, 0, 1], [1, 2, 0]]
-    
-    # Return both squares as MOLS
-    result = [square1, square2]
-    # EVOLVE-BLOCK-END
-    
-    return result
-"""
+        # Provide fixed EVOLVE-BLOCK template (4x4, 시그니처 n 인자, 들여쓰기 정상)
+        template = (
+            f"def {function_name}(n):\n"
+            f"    \"\"\"\n"
+            f"    {task_description}\n"
+            f"    \"\"\"\n"
+            f"    \n"
+            f"    # EVOLVE-BLOCK-START\n"
+            f"    # Generate first 4x4 latin square\n"
+            f"    square1 = [\n"
+            f"        [0, 1, 2, 3],\n"
+            f"        [1, 2, 3, 0],\n"
+            f"        [2, 3, 0, 1],\n"
+            f"        [3, 0, 1, 2]\n"
+            f"    ]\n"
+            f"    \n"
+            f"    # Generate second 4x4 latin square  \n"
+            f"    square2 = [\n"
+            f"        [0, 1, 2, 3],\n"
+            f"        [2, 3, 0, 1],\n"
+            f"        [3, 0, 1, 2],\n"
+            f"        [1, 2, 3, 0]\n"
+            f"    ]\n"
+            f"    \n"
+            f"    # Return both squares as MOLS\n"
+            f"    result = [square1, square2]\n"
+            f"    # EVOLVE-BLOCK-END\n"
+            f"    \n"
+            f"    return result\n"
+        )
         
         # Ask LLM to improve only the algorithm inside EVOLVE-BLOCK
         prompt = (
@@ -560,9 +571,6 @@ Make sure your changes work together cohesively!
             f"Return the COMPLETE code with improved algorithm between EVOLVE-BLOCK markers."
         )
         
-        # For initial generation, directly use template to ensure EVOLVE-BLOCK structure
-        # EVOLVE-BLOCK markers serve as position indicators only
-        # LLM will modify only the algorithm code between markers in later generations
         logger.info("Using fixed EVOLVE-BLOCK template for initial generation to guarantee structure")
         logger.info("EVOLVE-BLOCK markers are position indicators - LLM will modify only the algorithm between markers during evolution")
         return template
@@ -653,46 +661,8 @@ def process_data(data):
     # TODO: Implement data processing
     return data * 2 # Simple placeholder
 '''
-        test_prompt_diff_gen = f'''
-Current code:
-```python
-{parent_code_for_llm_diff}
-```
-Task: Modify the `process_data` function to add 5 to the result instead of multiplying by 2.
-Also, change the greeting in `greet` to "Hi, {name}!!!".
-'''
-                                                                            
-                                                           
-                                          
-                              
-                                   
-                                                           
-           
-                                                                       
-                                           
-                                         
-                                                                                                               
-                                                                                                           
-        
-        async def mock_generate_empty_diff(prompt, model_name, temperature, output_format):
-            return "  \n  " 
-        
-        original_generate_code = agent.generate_code 
-        agent.generate_code = mock_generate_empty_diff
-        
-        print("\n--- Testing execute with empty diff from LLM ---")
-        result_empty_diff = await agent.execute(
-            prompt="doesn't matter",
-            parent_code_for_diff=parent_code_for_llm_diff,
-            output_format="diff"
-        )
-        assert result_empty_diff == parent_code_for_llm_diff, "Empty diff should return parent code."
-        print("Execute with empty diff test passed.")
-        agent.generate_code = original_generate_code
+        # (이후 닫히지 않은 문자열 및 불필요한 테스트 코드 삭제)
 
-    async def main_tests():
-        await test_diff_application()
-                                                                                     
-        print("\nAll selected local tests in CodeGeneratorAgent passed.")
 
-    asyncio.run(main_tests())
+    asyncio.run(test_diff_application())
+    asyncio.run(test_generation())

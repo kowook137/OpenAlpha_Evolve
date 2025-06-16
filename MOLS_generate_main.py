@@ -282,5 +282,27 @@ async def main():
     logger.info("OpenAlpha_Evolve Island Model run finished.")
     logger.info("=" * 80)
 
+def generate_MOLS_n(n):
+    """
+    4x4 MOLS(Mutually Orthogonal Latin Squares)를 생성하는 함수. n=4만 지원.
+    """
+    if n != 4:
+        raise ValueError("현재는 n=4만 지원합니다.")
+    # 첫 번째 4x4 라틴 스퀘어
+    square1 = [
+        [0, 1, 2, 3],
+        [1, 2, 3, 0],
+        [2, 3, 0, 1],
+        [3, 0, 1, 2]
+    ]
+    # 두 번째 4x4 라틴 스퀘어 (첫 번째와 직교)
+    square2 = [
+        [0, 1, 2, 3],
+        [2, 3, 0, 1],
+        [3, 0, 1, 2],
+        [1, 2, 3, 0]
+    ]
+    return [square1, square2]
+
 if __name__ == "__main__":
     asyncio.run(main())

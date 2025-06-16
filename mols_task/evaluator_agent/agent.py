@@ -2,6 +2,8 @@ import os
 import asyncio
 import time
 import traceback
+import ast
+import re
 from mols_task.evaluation import evaluate
 from core.interfaces import EvaluatorAgentInterface, Program, TaskDefinition, BaseAgent
 from typing import Optional, Dict, Any
@@ -77,12 +79,34 @@ class EvaluatorAgent(EvaluatorAgentInterface, BaseAgent):
         return program
 
     async def _execute_safely(self, code: str):
-        """Safe environment code execution"""
+        """Safe environment code execution with patching and syntax check"""
+        def patch_evolved_code(code: str, n: int = 4) -> str:
+            # range(3) 또는 range(4) → range(n)으로 치환
+            code = re.sub(r'range\(\s*[34]\s*\)', 'range(n)', code)
+            # [0,1,2,3] → [i for i in range(n)]
+            code = re.sub(r'\[0,\s*1,\s*2,\s*3\]', '[i for i in range(n)]', code)
+            return code
+
         try:
-            # Program execution
+            # 1. 문법 검사
+            try:
+                ast.parse(code)
+            except Exception as e:
+                raise RuntimeError(f"Syntax error in evolved code: {e}")
+
+            # 2. 코드 치환
+            code = patch_evolved_code(code, n=4)
+
+            # 3. 함수명 검사
+            if 'def generate_MOLS_n' not in code:
+                raise RuntimeError("Function 'generate_MOLS_n' not found in evolved code.")
+
+            # 4. 실행 및 호출
             namespace = {}
             exec(code, namespace)
-            squares = namespace['generate_MOLS_3']()
+            if 'generate_MOLS_n' not in namespace:
+                raise RuntimeError("Function 'generate_MOLS_n' not defined after exec.")
+            squares = namespace['generate_MOLS_n'](4)
             return squares
         except Exception as e:
             raise RuntimeError(f"Code execution failed: {str(e)}")
