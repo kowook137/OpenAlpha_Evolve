@@ -6,6 +6,7 @@ load_dotenv()
 
 # API Configuration
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
 # If no API key is found in environment variables,
 # use a placeholder (non-functional)
@@ -18,10 +19,53 @@ if not GEMINI_API_KEY:
     print("Warning: GEMINI_API_KEY not found in .env or environment. Using a NON-FUNCTIONAL placeholder. Please create a .env file with your valid API key.")
     GEMINI_API_KEY = "Your Gemini Api key"  # This will NOT work
 
+if not ANTHROPIC_API_KEY:
+    print("Warning: ANTHROPIC_API_KEY not found in .env or environment. Please set it in your .env file.")
+    ANTHROPIC_API_KEY = "Your Anthropic API key"  # This will NOT work
+
 # LLM Model Configuration
 GEMINI_PRO_MODEL_NAME = "gemini-2.5-flash-preview-04-17"  # Primary model for generation
 GEMINI_FLASH_MODEL_NAME = "gemini-2.5-flash-preview-04-17"  # Faster model for evaluation
 GEMINI_EVALUATION_MODEL = "gemini-2.5-flash-preview-04-17"  # Model specifically for evaluation
+
+# Claude Model Configuration
+CLAUDE_SONNET_MODEL_NAME = "claude-3-5-sonnet-20241022"  # Claude Sonnet model
+
+# Custom Provider Configuration
+PRO_KEY = "claude_sonnet"  # Use Claude as primary model
+FLASH_KEY = "claude_haiku"  # Use Claude Haiku for fast generation
+EVALUATION_KEY = "claude_sonnet"  # Use Claude for evaluation
+
+CUSTOM_PROVIDERS = {
+    "claude_sonnet": {
+        "api_key": ANTHROPIC_API_KEY,
+        "provider_type": "anthropic",
+        "model": CLAUDE_SONNET_MODEL_NAME
+    },
+    "claude_haiku": {
+        "api_key": ANTHROPIC_API_KEY,
+        "provider_type": "anthropic",
+        "model": "claude-3-haiku-20240307"
+    },
+    "gemini_pro": {
+        "api_key": GEMINI_API_KEY,
+        "provider_type": "openai_compatible",
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "model": GEMINI_PRO_MODEL_NAME
+    },
+    "gemini_flash": {
+        "api_key": GEMINI_API_KEY,
+        "provider_type": "openai_compatible", 
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "model": GEMINI_FLASH_MODEL_NAME
+    },
+    "gemini_eval": {
+        "api_key": GEMINI_API_KEY,
+        "provider_type": "openai_compatible",
+        "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+        "model": GEMINI_EVALUATION_MODEL
+    }
+}
 
 # Evolution Algorithm Parameters
 POPULATION_SIZE = 10  # Total population size
@@ -51,7 +95,7 @@ DIMENSION_BINS = {
 }
 
 # GPU Island Model Settings (RTX 3080 Optimized)
-ENABLE_GPU_ACCELERATION = True  # Enable GPU acceleration
+ENABLE_GPU_ACCELERATION = True  # Enable GPU acceleration (RTX-3080 ready)
 GPU_DEVICE = "cuda:0"  # GPU device
 GPU_NUM_ISLANDS = 10  # Number of islands for GPU processing (increased)
 GPU_POPULATION_PER_ISLAND = 30  # Population per island (increased)
@@ -89,9 +133,9 @@ USE_PROCESS_POOL = False  # Use ProcessPool instead of ThreadPool
 PARALLEL_EVALUATION_BATCH_SIZE = 5  # Batch size for parallel evaluation
 
 # Timeout Settings
-EVALUATION_TIMEOUT_SECONDS = 30
-CODE_GENERATION_TIMEOUT_SECONDS = 120
-DIFF_APPLICATION_TIMEOUT_SECONDS = 10
+EVALUATION_TIMEOUT_SECONDS = 500
+CODE_GENERATION_TIMEOUT_SECONDS = 500
+DIFF_APPLICATION_TIMEOUT_SECONDS = 300
 
 # Database Configuration (for storing programs and their fitness)
 DATABASE_TYPE = "in_memory"  # "in_memory" or "file" (file not implemented yet)

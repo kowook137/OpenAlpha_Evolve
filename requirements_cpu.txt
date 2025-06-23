@@ -1,0 +1,34 @@
+# Core Dependencies
+google-generativeai>=0.3.0
+python-dotenv>=1.0.0
+openai>=1.0.0
+
+# CPU-only PyTorch (will install CPU version by default if no CUDA detected)
+torch>=2.0.0
+torchvision>=0.15.0
+torchaudio>=2.0.0
+numpy>=1.21.0
+
+# Scientific Computing
+scipy>=1.9.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Async Programming
+asyncio>=3.4.3
+
+# Utilities
+uuid>=1.30
+gradio>=4.0.0
+
+# Code Analysis and System Monitoring
+psutil>=5.9.0
+radon>=5.1.0
+
+# Optional: Advanced Features
+# transformers  # For additional LLM support
+# accelerate    # For GPU optimization
+# deap         # For genetic algorithms
+# ray[rllib]   # For distributed computing
+# pytest       # For testing
+# docker       # For sandboxing 

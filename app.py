@@ -65,8 +65,8 @@ for module in ['task_manager.agent', 'code_generator.agent', 'evaluator_agent.ag
     logging.getLogger(module).setLevel(logging.DEBUG)
 
 # Check if API key is set
-if settings.GEMINI_API_KEY.startswith("YOUR_API_KEY") or not settings.GEMINI_API_KEY:
-    API_KEY_WARNING = "⚠️ API key not properly set! Please set your Gemini API key in the .env file."
+if settings.ANTHROPIC_API_KEY.startswith("YOUR_API_KEY") or not settings.ANTHROPIC_API_KEY or settings.ANTHROPIC_API_KEY == "Your Anthropic API key":
+    API_KEY_WARNING = "⚠️ API key not properly set! Please set your Anthropic API key in the .env file."
 else:
     API_KEY_WARNING = ""
 
@@ -254,6 +254,15 @@ FIB_EXAMPLES = '''[
     {"input": [10], "output": 55}
 ]'''
 
+# Example templates: MOLS task
+# Start with imperfect examples to encourage algorithmic learning
+MOLS_EXAMPLES = '''[
+    {"input": [], "output": [
+        [[0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7],[0,1,2,3,4,5,6,7]],
+        [[0,0,0,0,0,0,0,0],[1,1,1,1,1,1,1,1],[2,2,2,2,2,2,2,2],[3,3,3,3,3,3,3,3],[4,4,4,4,4,4,4,4],[5,5,5,5,5,5,5,5],[6,6,6,6,6,6,6,6],[7,7,7,7,7,7,7,7]]
+    ]}
+]'''
+
 def set_fib_example():
     """Populate the form with the Fibonacci task example."""
     return (
@@ -262,6 +271,16 @@ def set_fib_example():
         "fibonacci",
         FIB_EXAMPLES,
         ""
+    )
+
+def set_mols_example():
+    """Populate the form with the MOLS task example."""
+    return (
+        "mols_task",
+        "Generate two 8x8 mutually orthogonal Latin squares using an algorithmic approach (NOT hardcoding). Each Latin square must use numbers 0-7 exactly once in each row and column. The two squares must be orthogonal, meaning when overlaid, each of the 64 ordered pairs (i,j) where i and j are from 0-7 appears exactly once. Return as a list [square1, square2] where each square is an 8x8 matrix (list of lists). Start with a simple approach like random generation and evolve towards a systematic algorithm that can construct valid MOLS. DO NOT hardcode the matrix values.",
+        "generate_mols",
+        MOLS_EXAMPLES,
+        "random, itertools, math"
     )
 
 # Create the Gradio interface
@@ -310,22 +329,23 @@ with gr.Blocks(title="OpenAlpha_Evolve") as demo:
             with gr.Row():
                 population_size = gr.Slider(
                     label="Population Size",
-                    minimum=2, 
-                    maximum=10, 
-                    value=3, 
+                    minimum=5, 
+                    maximum=20, 
+                    value=8, 
                     step=1
                 )
                 
                 generations = gr.Slider(
                     label="Generations",
-                    minimum=1, 
-                    maximum=5, 
-                    value=2, 
+                    minimum=3, 
+                    maximum=15, 
+                    value=8, 
                     step=1
                 )
             
             with gr.Row():
                 fib_btn = gr.Button("🔢 Fibonacci Example")
+                mols_btn = gr.Button("🔲 MOLS Example")
                 run_btn = gr.Button("🚀 Run Evolution", variant="primary")
         
         with gr.Column(scale=1):
@@ -338,6 +358,12 @@ with gr.Blocks(title="OpenAlpha_Evolve") as demo:
     # Example setter for Fibonacci
     fib_btn.click(
         set_fib_example,
+        outputs=[task_id, description, function_name, examples_json, allowed_imports]
+    )
+    
+    # Example setter for MOLS
+    mols_btn.click(
+        set_mols_example,
         outputs=[task_id, description, function_name, examples_json, allowed_imports]
     )
     

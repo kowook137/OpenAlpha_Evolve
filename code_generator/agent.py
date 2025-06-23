@@ -14,8 +14,11 @@ from openai import (
     RateLimitError,
 )
 
+import anthropic
+
 from config import settings
 from core.interfaces import CodeGeneratorInterface
+from core.evolve_block_parser import EvolveBlockParser
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +28,28 @@ class CodeGeneratorAgent(CodeGeneratorInterface):
         self.pro_provider = settings.CUSTOM_PROVIDERS.get(settings.PRO_KEY)
         self.flash_provider = settings.CUSTOM_PROVIDERS.get(settings.FLASH_KEY)
         self.evaluation_provider = settings.CUSTOM_PROVIDERS.get(settings.EVALUATION_KEY)
-
+        self.evolve_parser = EvolveBlockParser()
 
         for provider in settings.CUSTOM_PROVIDERS:
             if not settings.CUSTOM_PROVIDERS[provider]['api_key']:
                 raise ValueError(f"{provider} API_KEY not found in settings. Please set it in your .env file or config.")
 
-        self.client = AsyncOpenAI(base_url=settings.CUSTOM_PROVIDERS[settings.FLASH_KEY]['base_url'], api_key=settings.CUSTOM_PROVIDERS[settings.FLASH_KEY]['api_key'])
+        # Initialize clients based on provider type
+        self.openai_client = None
+        self.anthropic_client = None
+        
+        # Initialize OpenAI client if needed
+        openai_providers = [p for p in settings.CUSTOM_PROVIDERS.values() if p.get('provider_type') == 'openai_compatible']
+        if openai_providers:
+            provider = openai_providers[0]  # Use first OpenAI-compatible provider
+            self.openai_client = AsyncOpenAI(base_url=provider['base_url'], api_key=provider['api_key'])
+        
+        # Initialize Anthropic client if needed
+        anthropic_providers = [p for p in settings.CUSTOM_PROVIDERS.values() if p.get('provider_type') == 'anthropic']
+        if anthropic_providers:
+            provider = anthropic_providers[0]  # Use first Anthropic provider
+            self.anthropic_client = anthropic.AsyncAnthropic(api_key=provider['api_key'])
+        
         self.generation_config = {
             "temperature":0.7,
             "top_p":0.9,
@@ -67,28 +85,53 @@ Make sure that the changes you propose are consistent with each other.
         retries = settings.API_MAX_RETRIES
         delay = settings.API_RETRY_DELAY_SECONDS
         
+        provider_config = settings.CUSTOM_PROVIDERS[provider_name]
+        provider_type = provider_config.get('provider_type', 'openai_compatible')
+        
         for attempt in range(retries):
             try:
-                logger.debug(f"API Call Attempt {attempt + 1} of {retries} to {provider_name}.")
+                logger.debug(f"API Call Attempt {attempt + 1} of {retries} to {provider_name} ({provider_type}).")
 
-                client = self.client
-                client.api_key = settings.CUSTOM_PROVIDERS[provider_name]['api_key']
-                client.base_url = settings.CUSTOM_PROVIDERS[provider_name]['base_url']
+                if provider_type == "anthropic":
+                    # Use Anthropic client
+                    if not self.anthropic_client:
+                        raise ValueError("Anthropic client not initialized")
+                    
+                    response = await self.anthropic_client.messages.create(
+                        model=provider_config['model'],
+                        max_tokens=self.generation_config.get("max_tokens", 4096),
+                        temperature=temperature if temperature is not None else self.generation_config["temperature"],
+                        messages=[{"role": "user", "content": prompt}]
+                    )
+                    
+                    generated_text = response.content[0].text
 
-                response = await client.chat.completions.create(
-                    model=settings.CUSTOM_PROVIDERS[provider_name]['model'],
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=self.generation_config["max_tokens"] if "max_tokens" in self.generation_config else None,
-                    temperature=temperature,
-                    top_p=self.generation_config["top_p"]
-                )
+                elif provider_type == "openai_compatible":
+                    # Use OpenAI client
+                    if not self.openai_client:
+                        raise ValueError("OpenAI client not initialized")
+                    
+                    self.openai_client.api_key = provider_config['api_key']
+                    self.openai_client.base_url = provider_config['base_url']
 
-                generated_text = response.choices[0].message.content
+                    response = await self.openai_client.chat.completions.create(
+                        model=provider_config['model'],
+                        messages=[{"role": "user", "content": prompt}],
+                        max_tokens=self.generation_config.get("max_tokens"),
+                        temperature=temperature if temperature is not None else self.generation_config["temperature"],
+                        top_p=self.generation_config["top_p"]
+                    )
+
+                    generated_text = response.choices[0].message.content
+                    
+                else:
+                    raise ValueError(f"Unknown provider type: {provider_type}")
 
                 logger.debug(f"Raw response from API:\n--RESPONSE START--\n{generated_text}\n--RESPONSE END--")
                 if generated_text is None:
                     logger.error("Received None as generated text from API.")
                     return ""
+                    
                 if output_format == "code":
                     cleaned_code = self._clean_llm_output(generated_text)
                     logger.debug(f"Cleaned code:\n--CLEANED CODE START--\n{cleaned_code}\n--CLEANED CODE END--")
@@ -96,6 +139,7 @@ Make sure that the changes you propose are consistent with each other.
                 else: # output_format == "diff"
                     logger.debug(f"Returning raw diff text:\n--DIFF TEXT START--\n{generated_text}\n--DIFF TEXT END--")
                     return generated_text # Return raw diff text
+                    
             except (APIError, InternalServerError, TimeoutError, RateLimitError, APITimeoutError, AuthenticationError, BadRequestError) as e:
                 logger.warning(f"API error on attempt {attempt + 1}: {type(e).__name__} - {e}. Retrying in {delay}s...")
                 if attempt < retries - 1:
@@ -103,6 +147,14 @@ Make sure that the changes you propose are consistent with each other.
                     delay *= 2 
                 else:
                     logger.error(f"API call failed after {retries} retries for model {provider_name}.")
+                    raise
+            except anthropic.APIError as e:
+                logger.warning(f"Anthropic API error on attempt {attempt + 1}: {e}. Retrying in {delay}s...")
+                if attempt < retries - 1:
+                    await asyncio.sleep(delay)
+                    delay *= 2 
+                else:
+                    logger.error(f"Anthropic API call failed after {retries} retries for model {provider_name}.")
                     raise
             except Exception as e:
                 logger.error(f"An unexpected error occurred during code generation with {provider_name}: {e}", exc_info=True)

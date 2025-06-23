@@ -26,16 +26,18 @@ class SelectionControllerAgent(SelectionControllerInterface, BaseAgent):
             logger.warning(f"Requested {num_parents} parents, but population size is only {len(population)}. Selecting all individuals as parents.")
             return list(population) # Return a copy
 
-        # Sort population by fitness (higher is better: correctness primary, runtime secondary)
-        # Assuming fitness_scores dictionary has 'correctness' and 'runtime_ms'
-        # Lower runtime_ms is better, so we use -runtime_ms for sorting if correctness is equal
+        # Sort population by fitness (다차원 평가 고려)
+        # 1순위: 다차원 종합 점수 (있는 경우)
+        # 2순위: 기존 correctness 점수  
+        # 3순위: 낮은 runtime (성능)
         sorted_population = sorted(
             population,
             key=lambda p: (
+                p.fitness_scores.get("multi_metric_score", p.fitness_scores.get("correctness", 0.0) * 10),  # 다차원 점수 우선
                 p.fitness_scores.get("correctness", 0.0),
                 -p.fitness_scores.get("runtime_ms", float('inf')) # Negative for ascending sort on runtime
             ),
-            reverse=True  # Higher correctness is better
+            reverse=True  # Higher scores are better
         )
         logger.debug(f"Population sorted for parent selection. Top 3 (if available): {[p.id for p in sorted_population[:3]]}")
 
@@ -118,10 +120,11 @@ class SelectionControllerAgent(SelectionControllerInterface, BaseAgent):
             logger.warning("Survivor selection called with empty combined population. Returning empty list.")
             return []
 
-        # Sort by fitness (correctness primary, runtime secondary), then by generation (favor newer for tie-breaking among equals)
+        # Sort by fitness (다차원 평가 우선), then by generation (favor newer for tie-breaking among equals)
         sorted_combined = sorted(
             combined_population,
             key=lambda p: (
+                p.fitness_scores.get("multi_metric_score", p.fitness_scores.get("correctness", 0.0) * 10),  # 다차원 점수 우선
                 p.fitness_scores.get("correctness", 0.0),
                 -p.fitness_scores.get("runtime_ms", float('inf')),
                 -p.generation # Favor newer generations in case of exact fitness tie

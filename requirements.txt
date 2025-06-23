@@ -1,6 +1,8 @@
 # Core Dependencies
 google-generativeai>=0.3.0
 python-dotenv>=1.0.0
+openai>=1.0.0
+anthropic>=0.8.0
 
 # GPU Acceleration (RTX 3080 Support)
 torch>=2.0.0
@@ -19,6 +21,10 @@ asyncio>=3.4.3
 # Utilities
 uuid>=1.30
 gradio>=4.0.0
+
+# Code Analysis and System Monitoring
+psutil>=5.9.0
+radon>=5.1.0
 
 # Optional: Advanced Features
 # transformers  # For additional LLM support
